@@ -1,6 +1,7 @@
 import npyscreen
 import time 
-import hashlib 
+import hashlib
+import random 
 import sqlite3
 
 class MyTestApp(npyscreen.NPSAppManaged):
@@ -12,8 +13,7 @@ class MyTestApp(npyscreen.NPSAppManaged):
             NAME TEXT NOT NULL,
             USERNAME TEXT NOT NULL,
             PASSWORD TEXT NOT NULL,
-            URL TEXT NOT NULL,
-            NOTES TEXT NOT NULL);''')
+            URL TEXT NOT NULL);''')
         self.db.execute('''CREATE TABLE IF NOT EXISTS users
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
             USERNAME TEXT NOT NULL,
@@ -34,7 +34,7 @@ class LoginForm(npyscreen.Form):
         self.users = self.getUserData()
 
     def getUserData(self):
-        # this is to get the user data from the database, to be implemented later
+        # this is to get the user data from the database, and return it as a dictionary
         users = {}
         self.db = sqlite3.connect('passcodes.db')
         cursor = self.db.execute('''SELECT USERNAME, PASSWORD FROM users''')
@@ -45,7 +45,6 @@ class LoginForm(npyscreen.Form):
     
     def saveUserData(self):
         # write user data to the database
-
         self.db = sqlite3.connect('passcodes.db')
         self.db.execute('''INSERT INTO users (USERNAME, PASSWORD) VALUES (?, ?)''', (self.username.value, self.users[self.username.value]))
         self.db.commit()
@@ -60,8 +59,10 @@ class LoginForm(npyscreen.Form):
         self.add(npyscreen.ButtonPress, name = "Login", when_pressed_function = self.login)
         self.add(npyscreen.ButtonPress, name = "Create Account", when_pressed_function = self.createAccount)    
 
-    def afterEditing(self):
-        pass 
+    def clear(self):
+        # This clears the form
+        self.username.value = ""
+        self.password.value = ""    
 
     def login(self):
         # This checks if the user exists and if the password is correct
@@ -106,6 +107,7 @@ class HomeForm(npyscreen.Form):
         self.add(npyscreen.ButtonPress, name = "Search Logins", when_pressed_function = self.searchPasscode)
         self.add(npyscreen.ButtonPress, name = "Create Login", when_pressed_function = self.createPasscode)
         self.add(npyscreen.ButtonPress, name = "Delete Login", when_pressed_function = self.deletePasscode)
+        self.add(npyscreen.ButtonPress, name = "Logout", when_pressed_function = self.logout)
 
     def createPasscode(self):
         self.parentApp.switchForm("CreateLogin")
@@ -116,9 +118,14 @@ class HomeForm(npyscreen.Form):
     def deletePasscode(self):
         pass
 
+    def logout(self):
+        self.parentApp.currentUser = None
+        self.parentApp.getForm("MAIN").clear()
+        self.parentApp.switchForm("MAIN")
+        
 
 
-class CreateLoginForm(npyscreen.FormWithMenus):
+class CreateLoginForm(npyscreen.Form):
     def __init__(self):
         super().__init__()
     
@@ -137,17 +144,54 @@ class CreateLoginForm(npyscreen.FormWithMenus):
         self.add(npyscreen.ButtonPress, name = "Cancel", when_pressed_function = self.cancel)
 
         self.add(npyscreen.FixedText, value="-" * 40, editable=False)
-        self.passLength = self.add(npyscreen.TitleSlider, name = "Password Length:", out_of=30, step=1, value=12)
-        self.passOptions = self.add(npyscreen.TitleMultiSelect, name = "Password Options:", value = [0,1,2,3] ,values = ["Numbers", "Symbols", "Uppercase"], scroll_exit=True)
+        self.passLength = self.add(npyscreen.TitleSlider, name = "Password Length:", out_of=30, step=1, value=12, when_value_edited_function = self.generate)
+        self.passOptions = self.add(npyscreen.TitleMultiSelect, name = "Password Options:", value = [0,1] ,values = ["Numbers", "Symbols"], scroll_exit=True, when_value_edited_function = self.generate)
+
+        self.generate()
         
+    def clear(self):
+        self.name.value = ""
+        self.url.value = ""
+        self.username.value = ""
+        self.password.value = ""
+        self.passLength.value = 12
+        self.passOptions.value = [0,1]
+        self.generate()
+    
     def generate(self):
-        pass
+        # generate a random password 
+
+        random.seed(time.time())
+        
+        code = ''
+        while len(code) < self.passLength.value:
+            n = random.randint(33, 122)
+            if not 0 in self.passOptions.value and n >= 48 and n <= 57: continue
+            if not 1 in self.passOptions.value and n >= 33 and n <= 47: continue
+            if not 1 in self.passOptions.value and n >= 58 and n <= 64: continue
+            if not 1 in self.passOptions.value and n >= 91 and n <= 96: continue
+
+            
+
+
+            code += chr(n)
+        self.password.value = code
+        self.display()
 
     def cancel(self):
+        self.clear()
         self.parentApp.switchForm("Home")
 
     def save(self):
-        pass 
+        # save the login to the database
+        self.db = sqlite3.connect('passcodes.db')
+        self.db.execute('''INSERT INTO passcodes (NAME, USERNAME, PASSWORD, URL) VALUES (?, ?, ?, ?)''', (self.name.value, self.username.value, self.password.value, self.url.value))   
+        self.db.commit()
+        self.db.close()
+        self.clear()
+        self.parentApp.switchForm("Home")
+        
+        
 
 if __name__ == '__main__':
     TA = MyTestApp()
