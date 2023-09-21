@@ -36,7 +36,21 @@ class LoginForm(npyscreen.Form):
     def getUserData(self):
         # this is to get the user data from the database, to be implemented later
         users = {}
-        return users 
+        self.db = sqlite3.connect('passcodes.db')
+        cursor = self.db.execute('''SELECT USERNAME, PASSWORD FROM users''')
+        for row in cursor:
+            users[row[0]] = row[1]
+        self.db.close()
+        return users
+    
+    def saveUserData(self):
+        # write user data to the database
+
+        self.db = sqlite3.connect('passcodes.db')
+        self.db.execute('''INSERT INTO users (USERNAME, PASSWORD) VALUES (?, ?)''', (self.username.value, self.users[self.username.value]))
+        self.db.commit()
+        self.db.close()
+        
     
     def create(self):
         # This creates the form
@@ -55,7 +69,6 @@ class LoginForm(npyscreen.Form):
         password = self.password.value
         if user not in self.users:
             npyscreen.notify_confirm("User does not exist", title="Alert")
-            print('user does not exist')
             return
         else:
             if self.users[user] == hashlib.sha256(password.encode()).hexdigest():
@@ -76,6 +89,7 @@ class LoginForm(npyscreen.Form):
             return
         else:
             self.users[user] = hashlib.sha256(password.encode()).hexdigest()
+            self.saveUserData()
             npyscreen.notify_confirm("Added User", title="Alert")
             self.parentApp.currentUser = user
             self.parentApp.switchForm("Home")
@@ -118,13 +132,13 @@ class CreateLoginForm(npyscreen.FormWithMenus):
         self.password = self.add(npyscreen.TitleText, name = "Password:", editable = True)
         
         self.add(npyscreen.ButtonPress, name = "generate", when_pressed_function = self.generate)
-        
-        self.add(npyscreen.ButtonPress, name = "Save", when_pressed_function = self.createPasscode)
+        self.add(npyscreen.TitleText, name = " ", editable = False)
+        self.add(npyscreen.ButtonPress, name = "Save", when_pressed_function = self.save)
         self.add(npyscreen.ButtonPress, name = "Cancel", when_pressed_function = self.cancel)
 
-        self.add(npyscreen.FixedText, value="-" * 40, rely=12, editable=False)
-        self.length = self.add(npyscreen.TitleSlider, name = "Password Length:", out_of=30, step=1, value=12)
-        self.numbers = self.add(npyscreen.TitleMultiSelect, name = "Password Options:", value = [0,1,2,3] ,values = ["Numbers", "Symbols", "Uppercase"], scroll_exit=True)
+        self.add(npyscreen.FixedText, value="-" * 40, editable=False)
+        self.passLength = self.add(npyscreen.TitleSlider, name = "Password Length:", out_of=30, step=1, value=12)
+        self.passOptions = self.add(npyscreen.TitleMultiSelect, name = "Password Options:", value = [0,1,2,3] ,values = ["Numbers", "Symbols", "Uppercase"], scroll_exit=True)
         
     def generate(self):
         pass
@@ -132,7 +146,11 @@ class CreateLoginForm(npyscreen.FormWithMenus):
     def cancel(self):
         self.parentApp.switchForm("Home")
 
+    def save(self):
+        pass 
 
 if __name__ == '__main__':
     TA = MyTestApp()
     TA.run()
+
+
