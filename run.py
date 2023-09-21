@@ -10,6 +10,7 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.db = sqlite3.connect('passcodes.db')
         self.db.execute('''CREATE TABLE IF NOT EXISTS passcodes
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            OWNER TEXT NOT NULL,
             NAME TEXT NOT NULL,
             USERNAME TEXT NOT NULL,
             PASSWORD TEXT NOT NULL,
@@ -27,6 +28,7 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.registerForm("MAIN", LoginForm())
         self.registerForm("Home", HomeForm())
         self.registerForm("CreateLogin", CreateLoginForm())
+        self.registerForm("ViewLogins", viewLoginForm())
 
 class LoginForm(npyscreen.Form):
     def __init__(self):
@@ -96,24 +98,22 @@ class LoginForm(npyscreen.Form):
             self.parentApp.switchForm("Home")
             return
 
-class HomeForm(npyscreen.Form):
-    def __init__(self):
-        super().__init__()
-    
+class HomeForm(npyscreen.Form):    
     def create(self):
         self.heading = self.add(npyscreen.TitleText, name = "Passcodes Homeform", editable = False)
         # add a menu to create, search, and delete passcodes
         self.add(npyscreen.FixedText, value="-" * 40, rely=3, editable=False)
-        self.add(npyscreen.ButtonPress, name = "Search Logins", when_pressed_function = self.searchPasscode)
+        self.add(npyscreen.ButtonPress, name = "View Logins", when_pressed_function = self.searchPasscode)
         self.add(npyscreen.ButtonPress, name = "Create Login", when_pressed_function = self.createPasscode)
-        self.add(npyscreen.ButtonPress, name = "Delete Login", when_pressed_function = self.deletePasscode)
+        # self.add(npyscreen.ButtonPress, name = "Delete Login", when_pressed_function = self.deletePasscode)
         self.add(npyscreen.ButtonPress, name = "Logout", when_pressed_function = self.logout)
 
     def createPasscode(self):
         self.parentApp.switchForm("CreateLogin")
 
     def searchPasscode(self):
-        pass
+        self.parentApp.setNextForm("Home")
+        self.parentApp.switchForm("ViewLogins")
 
     def deletePasscode(self):
         pass
@@ -123,12 +123,7 @@ class HomeForm(npyscreen.Form):
         self.parentApp.getForm("MAIN").clear()
         self.parentApp.switchForm("MAIN")
         
-
-
 class CreateLoginForm(npyscreen.Form):
-    def __init__(self):
-        super().__init__()
-    
     def create(self):
         self.heading = self.add(npyscreen.TitleText, name = "Create Login", editable = False)
         self.add(npyscreen.FixedText, value="-" * 40, rely=3, editable=False)
@@ -150,6 +145,7 @@ class CreateLoginForm(npyscreen.Form):
         self.generate()
         
     def clear(self):
+        # clear the form
         self.name.value = ""
         self.url.value = ""
         self.username.value = ""
@@ -160,9 +156,7 @@ class CreateLoginForm(npyscreen.Form):
     
     def generate(self):
         # generate a random password 
-
         random.seed(time.time())
-        
         code = ''
         while len(code) < self.passLength.value:
             n = random.randint(33, 122)
@@ -170,28 +164,50 @@ class CreateLoginForm(npyscreen.Form):
             if not 1 in self.passOptions.value and n >= 33 and n <= 47: continue
             if not 1 in self.passOptions.value and n >= 58 and n <= 64: continue
             if not 1 in self.passOptions.value and n >= 91 and n <= 96: continue
-
-            
-
-
             code += chr(n)
         self.password.value = code
-        self.display()
+        self.password.display()
 
     def cancel(self):
+        # cancel the creation of the login and return to home
         self.clear()
         self.parentApp.switchForm("Home")
 
     def save(self):
         # save the login to the database
+        currentuser = self.parentApp.currentUser
         self.db = sqlite3.connect('passcodes.db')
-        self.db.execute('''INSERT INTO passcodes (NAME, USERNAME, PASSWORD, URL) VALUES (?, ?, ?, ?)''', (self.name.value, self.username.value, self.password.value, self.url.value))   
+        self.db.execute('''INSERT INTO passcodes (OWNER, NAME, USERNAME, PASSWORD, URL) VALUES (?, ?, ?, ?, ?)''', (currentuser, self.name.value, self.username.value, self.password.value, self.url.value))
         self.db.commit()
         self.db.close()
         self.clear()
         self.parentApp.switchForm("Home")
-        
-        
+
+class viewLoginForm(npyscreen.Form):
+    
+
+    def create(self):
+        self.name = self.add(npyscreen.TitleText, name = "Name:", editable = True)
+        self.add(npyscreen.ButtonPress, name = "Done", when_pressed_function = self.on_ok)
+        self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)
+        self.fill()
+
+    def fill(self):
+        currentuser = self.parentApp.currentUser
+
+        self.db = sqlite3.connect('passcodes.db')
+        cursor = self.db.execute('''SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes where OWNER = ?''', (currentuser,))
+        self.grid.values = []
+        for row in cursor:
+            self.grid.values.append(row)
+            print(row)
+        self.db.close()
+        self.grid.display()
+
+    def on_ok(self):
+        self.parentApp.switchForm("Home")
+
+
 
 if __name__ == '__main__':
     TA = MyTestApp()
