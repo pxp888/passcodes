@@ -52,7 +52,6 @@ class LoginForm(npyscreen.Form):
         self.db.commit()
         self.db.close()
         
-    
     def create(self):
         # This creates the form
         self.heading = self.add(npyscreen.TitleText, name = "Welcome to Passcodes", editable = False)
@@ -113,6 +112,7 @@ class HomeForm(npyscreen.Form):
 
     def searchPasscode(self):
         self.parentApp.setNextForm("Home")
+        self.parentApp.getForm("ViewLogins").fill()
         self.parentApp.switchForm("ViewLogins")
 
     def deletePasscode(self):
@@ -184,23 +184,22 @@ class CreateLoginForm(npyscreen.Form):
         self.parentApp.switchForm("Home")
 
 class viewLoginForm(npyscreen.Form):
-    
-
     def create(self):
-        self.name = self.add(npyscreen.TitleText, name = "Name:", editable = True)
+        self.nameline = self.add(npyscreen.TitleText, name = "Name:", editable = True)
+        self.add(npyscreen.ButtonPress, name = "Update", when_pressed_function = self.fill)
         self.add(npyscreen.ButtonPress, name = "Done", when_pressed_function = self.on_ok)
         self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)
-        self.fill()
 
     def fill(self):
         currentuser = self.parentApp.currentUser
-
+        filter = self.nameline.value
         self.db = sqlite3.connect('passcodes.db')
         cursor = self.db.execute('''SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes where OWNER = ?''', (currentuser,))
         self.grid.values = []
         for row in cursor:
+            if not filter is None and len(filter) > 0:
+                if filter not in row[0]: continue
             self.grid.values.append(row)
-            print(row)
         self.db.close()
         self.grid.display()
 
