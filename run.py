@@ -123,7 +123,7 @@ class HomeForm(npyscreen.Form):
         self.parentApp.getForm("MAIN").clear()
         self.parentApp.switchForm("MAIN")
         
-class CreateLoginForm(npyscreen.Form):
+class CreateLoginForm(npyscreen.ActionForm):
     def create(self):
         self.heading = self.add(npyscreen.TitleText, name = "Create Login", editable = False)
         self.add(npyscreen.FixedText, value="-" * 40, rely=3, editable=False)
@@ -135,12 +135,13 @@ class CreateLoginForm(npyscreen.Form):
         
         self.add(npyscreen.ButtonPress, name = "generate", when_pressed_function = self.generate)
         self.add(npyscreen.TitleText, name = " ", editable = False)
-        self.add(npyscreen.ButtonPress, name = "Save", when_pressed_function = self.save)
-        self.add(npyscreen.ButtonPress, name = "Cancel", when_pressed_function = self.cancel)
-
+        
         self.add(npyscreen.FixedText, value="-" * 40, editable=False)
         self.passLength = self.add(npyscreen.TitleSlider, name = "Password Length:", out_of=30, step=1, value=12, when_value_edited_function = self.generate)
         self.passOptions = self.add(npyscreen.TitleMultiSelect, name = "Password Options:", value = [0,1] ,values = ["Numbers", "Symbols"], scroll_exit=True, when_value_edited_function = self.generate)
+
+        self.passLength.value_changed_callback = self.generate
+        self.passOptions.value_changed_callback = self.generate
 
         self.generate()
         
@@ -154,7 +155,7 @@ class CreateLoginForm(npyscreen.Form):
         self.passOptions.value = [0,1]
         self.generate()
     
-    def generate(self):
+    def generate(self, widget=None):
         # generate a random password 
         random.seed(time.time())
         code = ''
@@ -168,12 +169,12 @@ class CreateLoginForm(npyscreen.Form):
         self.password.value = code
         self.password.display()
 
-    def cancel(self):
+    def on_cancel(self):
         # cancel the creation of the login and return to home
         self.clear()
         self.parentApp.switchForm("Home")
 
-    def save(self):
+    def on_ok(self):
         # save the login to the database
         currentuser = self.parentApp.currentUser
         self.db = sqlite3.connect('passcodes.db')
@@ -183,14 +184,16 @@ class CreateLoginForm(npyscreen.Form):
         self.clear()
         self.parentApp.switchForm("Home")
 
-class viewLoginForm(npyscreen.Form):
+class viewLoginForm(npyscreen.ActionFormMinimal):
     def create(self):
-        self.nameline = self.add(npyscreen.TitleText, name = "Name:", editable = True)
-        self.add(npyscreen.ButtonPress, name = "Update", when_pressed_function = self.fill)
-        self.add(npyscreen.ButtonPress, name = "Done", when_pressed_function = self.on_ok)
+        self.nameline = self.add(npyscreen.TitleText, name = "Name includes:", editable = True)
+        # self.add(npyscreen.ButtonPress, name = "Update", when_pressed_function = self.fill)
         self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)
+        
+        self.nameline.value_changed_callback = self.fill
 
-    def fill(self):
+
+    def fill(self, widget=None):
         currentuser = self.parentApp.currentUser
         filter = self.nameline.value
         self.db = sqlite3.connect('passcodes.db')
@@ -204,6 +207,9 @@ class viewLoginForm(npyscreen.Form):
         self.grid.display()
 
     def on_ok(self):
+        self.parentApp.switchForm("Home")
+    
+    def on_cancel(self):
         self.parentApp.switchForm("Home")
 
 
