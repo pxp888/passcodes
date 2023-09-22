@@ -1,8 +1,14 @@
-import npyscreen
 import time
 import hashlib
 import random 
 import sqlite3
+import npyscreen
+
+def hash(plaintext):
+    # this is a hash function
+    return hashlib.sha256(plaintext.encode()).hexdigest()
+
+
 
 class MyTestApp(npyscreen.NPSAppManaged):
     def __init__(self):
@@ -11,21 +17,21 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.db = sqlite3.connect('passcodes.db')
         self.db.execute('''CREATE TABLE IF NOT EXISTS passcodes
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            OWNER TEXT NOT NULL,
-            NAME TEXT NOT NULL,
-            USERNAME TEXT NOT NULL,
-            PASSWORD TEXT NOT NULL,
-            URL TEXT NOT NULL);''')
+            OWNER TEXT,
+            NAME TEXT,
+            USERNAME TEXT,
+            PASSWORD TEXT,
+            URL TEXT);''')
         self.db.execute('''CREATE TABLE IF NOT EXISTS users
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            USERNAME TEXT NOT NULL,
-            PASSWORD TEXT NOT NULL);''')
+            USERNAME TEXT,
+            PASSWORD TEXT);''')
         self.db.commit()
         self.db.close()
 
         self.currentUser = None
         self.masterPassword = None
-
+        
     def onStart(self):
         # create forms and associate them with the app
         self.registerForm("MAIN", LoginForm())
@@ -34,27 +40,6 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.registerForm("ViewLogins", viewLoginForm())
 
 class LoginForm(npyscreen.Form):
-    def __init__(self):
-        super().__init__()
-        self.users = self.getUserData()
-
-    def getUserData(self):
-        # this is to get the user data from the database, and return it as a dictionary
-        users = {}
-        self.db = sqlite3.connect('passcodes.db')
-        cursor = self.db.execute('''SELECT USERNAME, PASSWORD FROM users''')
-        for row in cursor:
-            users[row[0]] = row[1]
-        self.db.close()
-        return users
-    
-    def saveUserData(self):
-        # write user data to the database
-        self.db = sqlite3.connect('passcodes.db')
-        self.db.execute('''INSERT INTO users (USERNAME, PASSWORD) VALUES (?, ?)''', (self.username.value, self.users[self.username.value]))
-        self.db.commit()
-        self.db.close()
-        
     def create(self):
         # This creates the form
         self.heading = self.add(npyscreen.TitleText, name = "Welcome to Passcodes", editable = False)
@@ -68,18 +53,37 @@ class LoginForm(npyscreen.Form):
         self.username.value = ""
         self.password.value = ""    
 
+    def getUserData(self, user):
+        # This gets the user data from the database
+        self.db = sqlite3.connect('passcodes.db')
+        cursor = self.db.execute('''SELECT USERNAME, PASSWORD FROM users WHERE USERNAME = ?''', (user,))
+        for row in cursor:
+            self.db.close()
+            return row
+        self.db.close()
+        return None
+    
+    def saveUserData(self, user, password):
+        # This saves the user data to the database
+        password = hash(password)
+        self.db = sqlite3.connect('passcodes.db')
+        self.db.execute('''INSERT INTO users (USERNAME, PASSWORD) VALUES (?, ?)''', (user, password))
+        self.db.commit()
+        self.db.close()
+        
     def login(self):
         # This checks if the user exists and if the password is correct
         user = self.username.value
         password = self.password.value
-        if user not in self.users:
-            npyscreen.notify_confirm("User does not exist", title="Alert")
+        known = self.getUserData(user)
+        if known is None:
+            npyscreen.notify_confirm("User not found", title="Alert")
             return
         else:
-            if self.users[user] == hashlib.sha256(password.encode()).hexdigest():
-                self.parentApp.switchForm("Home")
+            if known[1] == hash(password):
                 self.parentApp.currentUser = user
                 self.parentApp.masterPassword = password
+                self.parentApp.switchForm("Home")
                 return
             else:
                 npyscreen.notify_confirm("Incorrect Password", title="Alert")
@@ -89,16 +93,19 @@ class LoginForm(npyscreen.Form):
         # this creates new accounts
         user = self.username.value
         password = self.password.value
-        if user in self.users:
-            npyscreen.notify_confirm("User Already exists", title="Alert")
-            return
-        else:
-            self.users[user] = hashlib.sha256(password.encode()).hexdigest()
-            self.saveUserData()
-            npyscreen.notify_confirm("Added User", title="Alert")
+        known = self.getUserData(user)
+        if known is None:
+            self.saveUserData(user, password)
+            npyscreen.notify_confirm("Account Created", title="Alert")
+            self.clear()
             self.parentApp.currentUser = user
+            self.parentApp.masterPassword = password
             self.parentApp.switchForm("Home")
             return
+        else:
+            npyscreen.notify_confirm("User already exists", title="Alert")
+            return
+
 
 class HomeForm(npyscreen.Form):    
     def create(self):
