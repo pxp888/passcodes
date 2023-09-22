@@ -1,14 +1,20 @@
 import time
 import hashlib
 import random 
+import base64
 import sqlite3
 import npyscreen
 from cryptography.fernet import Fernet
-import base64
+
+# This is a simple password manager that uses a master password to encrypt and decrypt passwords
+# Passwords are stored in a database and encrypted with the master password
+# The master password is hashed and stored in the database
 
 
 
-# define helper functions
+# CRYPTOGRAPHY FUNCTIONS
+
+# These are defined here to make it easier to change the encryption method later
 
 def hash(plaintext):
     # this is a hash function
@@ -28,7 +34,11 @@ def decrypt(ciphertext, key):
     plain_text = cipher_suite.decrypt(ciphertext.encode())
     return plain_text.decode()
 
-# define database functions, these need to be replaced if the storage method changes
+
+# DATABASE FUNCTIONS
+
+# These are defined here to make it easier to change the database later.  
+# These five functions are the only ones that interact with the database.  
 
 def setupStorage():
     # create database tables if they don't exist
@@ -67,7 +77,7 @@ def saveUserLoginData(user, password):
     db.commit()
     db.close()
 
-def getUserData(user, masterPassword='nada'):
+def getUserData(user, masterPassword):
     # gets records for a user from the database
     records = []
     db = sqlite3.connect('passcodes.db')
@@ -81,7 +91,7 @@ def getUserData(user, masterPassword='nada'):
         records[i] = (name, username, decrypt(password, masterPassword), url)
     return records
 
-def saveUserData(user, name, username, password, url, masterPassword='nada'):
+def saveUserData(user, name, username, password, url, masterPassword):
     # saves records for a user to the database
     password = encrypt(password, masterPassword)
     db = sqlite3.connect('passcodes.db')
@@ -89,6 +99,8 @@ def saveUserData(user, name, username, password, url, masterPassword='nada'):
     db.commit()
     db.close()
 
+
+# MAIN APPLICATION
 
 class MyTestApp(npyscreen.NPSAppManaged):
     def __init__(self):
@@ -108,6 +120,8 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.registerForm("ViewLogins", viewLoginForm())
 
 class LoginForm(npyscreen.Form):
+    # This is the login screen form that handles logging in and creating new accounts
+
     def create(self):
         # This creates the form
         self.heading = self.add(npyscreen.TitleText, name = "Welcome to Passcodes", editable = False)
@@ -163,6 +177,9 @@ class LoginForm(npyscreen.Form):
 
 
 class HomeForm(npyscreen.Form):
+    # this is a simple form that acts as the main menu for the application.  
+    # it allows the user to create new logins, view existing logins, logout, or exit the application
+
     def create(self):
         # create the main menu
         self.heading = self.add(npyscreen.TitleText, name = "Passcodes Homeform", editable = False)
@@ -193,6 +210,8 @@ class HomeForm(npyscreen.Form):
         self.parentApp.switchForm("MAIN")
         
 class CreateLoginForm(npyscreen.ActionForm):
+    # This form allows the user to create a new login record.  
+
     def create(self):
         # create form widgets
         self.heading = self.add(npyscreen.TitleText, name = "Create Login", editable = False)
@@ -202,11 +221,9 @@ class CreateLoginForm(npyscreen.ActionForm):
         self.username = self.add(npyscreen.TitleText, name = "Username:")
         self.password = self.add(npyscreen.TitleText, name = "Password:", editable = True)
         self.add(npyscreen.ButtonPress, name = "generate", when_pressed_function = self.generate)
-
         self.add(npyscreen.TitleText, name = " ", editable = False)
         self.add(npyscreen.ButtonPress, name = "OK", when_pressed_function = self.on_ok)
         self.add(npyscreen.ButtonPress, name = "Cancel", when_pressed_function = self.on_cancel)
-        
         self.add(npyscreen.TitleText, name = " ", editable = False)
         self.add(npyscreen.FixedText, value="-" * 40, editable=False)
         self.passLength = self.add(npyscreen.TitleSlider, name = "Password Length:", out_of=30, step=1, value=12)
@@ -256,6 +273,9 @@ class CreateLoginForm(npyscreen.ActionForm):
         self.parentApp.switchForm("Home")
 
 class viewLoginForm(npyscreen.ActionFormMinimal):
+    # This form allows the user to view their logins.
+    # By default all logins are shown, but the user can filter the results by name. 
+
     def create(self):
         # create the form widgets
         self.nameFilterLine = self.add(npyscreen.TitleText, name = "Name has:", editable = True)
