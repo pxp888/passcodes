@@ -4,6 +4,7 @@ import random
 import sqlite3
 import npyscreen
 from cryptography.fernet import Fernet
+import base64
 
 
 
@@ -11,8 +12,21 @@ from cryptography.fernet import Fernet
 
 def hash(plaintext):
     # this is a hash function
-    return hashlib.sha256(plaintext.encode()).hexdigest()
+    return hashlib.sha256(plaintext.encode()).digest()
 
+def encrypt(plaintext, key):
+    # this is an encryption function
+    key = base64.b64encode(hash(key))
+    cipher_suite = Fernet(key)
+    cipher_text = cipher_suite.encrypt(plaintext.encode())
+    return cipher_text.decode()
+
+def decrypt(ciphertext, key):
+    # this is a decryption function
+    key = base64.b64encode(hash(key))
+    cipher_suite = Fernet(key)
+    plain_text = cipher_suite.decrypt(ciphertext.encode())
+    return plain_text.decode()
 
 # define database functions, these need to be replaced if the storage method changes
 
@@ -53,7 +67,7 @@ def saveUserLoginData(user, password):
     db.commit()
     db.close()
 
-def getUserData(user):
+def getUserData(user, masterPassword='nada'):
     # gets records for a user from the database
     records = []
     db = sqlite3.connect('passcodes.db')
@@ -61,10 +75,15 @@ def getUserData(user):
     for row in cursor:
         records.append(row)
     db.close()
+
+    for i in range(len(records)):
+        name, username, password, url = records[i]
+        records[i] = (name, username, decrypt(password, masterPassword), url)
     return records
 
-def saveUserData(user, name, username, password, url):
+def saveUserData(user, name, username, password, url, masterPassword='nada'):
     # saves records for a user to the database
+    password = encrypt(password, masterPassword)
     db = sqlite3.connect('passcodes.db')
     db.execute('''INSERT INTO passcodes (OWNER, NAME, USERNAME, PASSWORD, URL) VALUES (?, ?, ?, ?, ?)''', (user, name, username, password, url))
     db.commit()
@@ -151,6 +170,10 @@ class HomeForm(npyscreen.Form):
         self.add(npyscreen.ButtonPress, name = "View Logins", when_pressed_function = self.searchPasscodes)
         self.add(npyscreen.ButtonPress, name = "Create Login", when_pressed_function = self.createPasscode)
         self.add(npyscreen.ButtonPress, name = "Logout", when_pressed_function = self.logout)
+        self.add(npyscreen.ButtonPress, name = "Exit", when_pressed_function = self.exit)
+
+    def exit(self):
+        self.parentApp.switchForm(None)
 
     def createPasscode(self):
         # switch to the create login form
@@ -179,6 +202,11 @@ class CreateLoginForm(npyscreen.ActionForm):
         self.username = self.add(npyscreen.TitleText, name = "Username:")
         self.password = self.add(npyscreen.TitleText, name = "Password:", editable = True)
         self.add(npyscreen.ButtonPress, name = "generate", when_pressed_function = self.generate)
+
+        self.add(npyscreen.TitleText, name = " ", editable = False)
+        self.add(npyscreen.ButtonPress, name = "OK", when_pressed_function = self.on_ok)
+        self.add(npyscreen.ButtonPress, name = "Cancel", when_pressed_function = self.on_cancel)
+        
         self.add(npyscreen.TitleText, name = " ", editable = False)
         self.add(npyscreen.FixedText, value="-" * 40, editable=False)
         self.passLength = self.add(npyscreen.TitleSlider, name = "Password Length:", out_of=30, step=1, value=12)
@@ -221,7 +249,8 @@ class CreateLoginForm(npyscreen.ActionForm):
     def on_ok(self):
         # save the login to the database
         currentuser = self.parentApp.currentUser
-        saveUserData(currentuser, self.name.value, self.username.value, self.password.value, self.url.value)
+        masterPassword = self.parentApp.masterPassword
+        saveUserData(currentuser, self.name.value, self.username.value, self.password.value, self.url.value, masterPassword)
 
         self.clear()
         self.parentApp.switchForm("Home")
@@ -237,7 +266,8 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 
     def update(self):
         self.nameFilterLine.value = ""
-        self.records = getUserData(self.parentApp.currentUser)
+        masterPassword = self.parentApp.masterPassword
+        self.records = getUserData(self.parentApp.currentUser, masterPassword)
         self.fill()
         
     def fill(self, widget=None):
