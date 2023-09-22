@@ -71,14 +71,13 @@ def saveUserData(user, name, username, password, url):
     db.close()
 
 
-
 class MyTestApp(npyscreen.NPSAppManaged):
     def __init__(self):
         super().__init__()
 
         # setup the database 
         setupStorage()
-
+        
         self.currentUser = None
         self.masterPassword = None
         
@@ -139,12 +138,12 @@ class LoginForm(npyscreen.Form):
             return
 
 
-class HomeForm(npyscreen.Form):    
+class HomeForm(npyscreen.Form):
     def create(self):
         # create the main menu
         self.heading = self.add(npyscreen.TitleText, name = "Passcodes Homeform", editable = False)
         self.add(npyscreen.FixedText, value="-" * 40, rely=3, editable=False)
-        self.add(npyscreen.ButtonPress, name = "View Logins", when_pressed_function = self.searchPasscode)
+        self.add(npyscreen.ButtonPress, name = "View Logins", when_pressed_function = self.searchPasscodes)
         self.add(npyscreen.ButtonPress, name = "Create Login", when_pressed_function = self.createPasscode)
         self.add(npyscreen.ButtonPress, name = "Logout", when_pressed_function = self.logout)
 
@@ -152,7 +151,7 @@ class HomeForm(npyscreen.Form):
         # switch to the create login form
         self.parentApp.switchForm("CreateLogin")
 
-    def searchPasscode(self):
+    def searchPasscodes(self):
         # switch to the view logins form
         self.parentApp.setNextForm("Home")
         self.parentApp.getForm("ViewLogins").update()
@@ -225,20 +224,20 @@ class CreateLoginForm(npyscreen.ActionForm):
 class viewLoginForm(npyscreen.ActionFormMinimal):
     def create(self):
         # create the form widgets
-        self.nameline = self.add(npyscreen.TitleText, name = "Name has:", editable = True)
+        self.nameFilterLine = self.add(npyscreen.TitleText, name = "Name has:", editable = True)
         self.add(npyscreen.FixedText, value="-" * 40, editable=False)
-        self.nameline.value_changed_callback = self.fill
+        self.nameFilterLine.value_changed_callback = self.fill
         self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)
         self.records = []
 
     def update(self):
-        self.nameline.value = ""
+        self.nameFilterLine.value = ""
         self.records = getUserData(self.parentApp.currentUser)
         self.fill()
         
     def fill(self, widget=None):
         # fill the grid with the login details
-        filter = str(self.nameline.value)
+        filter = str(self.nameFilterLine.value)
         self.grid.values = []
         for record in self.records:
             if filter.lower() in record[0].lower():
@@ -247,6 +246,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 
     def on_ok(self):
         # return to home form
+        self.nameFilterLine.value = ""
         self.parentApp.switchForm("Home")
     
 
