@@ -24,6 +24,7 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.db.close()
 
         self.currentUser = None
+        self.master = None # this is the master password
 
     def onStart(self):
         # create forms and associate them with the app
@@ -76,9 +77,9 @@ class LoginForm(npyscreen.Form):
             return
         else:
             if self.users[user] == hashlib.sha256(password.encode()).hexdigest():
-                npyscreen.notify_confirm("Login Successful", title="Alert")
                 self.parentApp.switchForm("Home")
                 self.parentApp.currentUser = user
+                self.parentApp.master = password
                 return
             else:
                 npyscreen.notify_confirm("Incorrect Password", title="Alert")
@@ -121,6 +122,7 @@ class HomeForm(npyscreen.Form):
     def logout(self):
         # log user out and return to login form
         self.parentApp.currentUser = None
+        self.parentApp.master = None
         self.parentApp.getForm("MAIN").clear()
         self.parentApp.switchForm("MAIN")
         
@@ -196,8 +198,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         currentuser = self.parentApp.currentUser
         filter = self.nameline.value
         self.db = sqlite3.connect('passcodes.db')
-        cursor = self.db.execute('''SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes where OWNER = ? ORDER BY NAME ASC   
-                                 ''', (currentuser,))
+        cursor = self.db.execute('''SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes where OWNER = ? ORDER BY NAME ASC''', (currentuser,))
         self.grid.values = []
         for row in cursor:
             if not filter is None and len(filter) > 0:
