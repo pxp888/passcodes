@@ -17,16 +17,34 @@ db.execute('''CREATE TABLE IF NOT EXISTS passcodes
 db.execute('''CREATE TABLE IF NOT EXISTS users
     (ID INTEGER PRIMARY KEY AUTOINCREMENT,
     USERNAME TEXT,
+    SALT TEXT,
     PASSWORD TEXT);''')
 db.commit()
 db.close()
-
 
 # define helper functions
 
 def hash(plaintext):
     # this is a hash function
     return hashlib.sha256(plaintext.encode()).hexdigest()
+
+def getUserLoginData(user):
+    # gets login data from the database
+    db = sqlite3.connect('passcodes.db')
+    cursor = db.execute('''SELECT USERNAME, PASSWORD FROM users WHERE USERNAME = ?''', (user,))
+    for row in cursor:
+        db.close()
+        return row
+    db.close()
+    return None
+
+def saveUserLoginData(user, password):
+    # saves login data to the database
+    password = hash(password)
+    db = sqlite3.connect('passcodes.db')
+    db.execute('''INSERT INTO users (USERNAME, PASSWORD) VALUES (?, ?, ?)''', (user, password))
+    db.commit()
+    db.close()
 
 def getUserData(user):
     # gets records for a user from the database
@@ -45,24 +63,11 @@ def saveUserData(user, name, username, password, url):
     db.commit()
     db.close()
 
+
+
 class MyTestApp(npyscreen.NPSAppManaged):
     def __init__(self):
         super().__init__()
-
-        self.db = sqlite3.connect('passcodes.db')
-        self.db.execute('''CREATE TABLE IF NOT EXISTS passcodes
-            (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            OWNER TEXT,
-            NAME TEXT,
-            USERNAME TEXT,
-            PASSWORD TEXT,
-            URL TEXT);''')
-        self.db.execute('''CREATE TABLE IF NOT EXISTS users
-            (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            USERNAME TEXT,
-            PASSWORD TEXT);''')
-        self.db.commit()
-        self.db.close()
 
         self.currentUser = None
         self.masterPassword = None
@@ -87,30 +92,12 @@ class LoginForm(npyscreen.Form):
         # This clears the form
         self.username.value = ""
         self.password.value = ""    
-
-    def getUserLoginData(self, user):
-        # This gets the user data from the database
-        self.db = sqlite3.connect('passcodes.db')
-        cursor = self.db.execute('''SELECT USERNAME, PASSWORD FROM users WHERE USERNAME = ?''', (user,))
-        for row in cursor:
-            self.db.close()
-            return row
-        self.db.close()
-        return None
-    
-    def saveUserLoginData(self, user, password):
-        # This saves the user data to the database
-        password = hash(password)
-        self.db = sqlite3.connect('passcodes.db')
-        self.db.execute('''INSERT INTO users (USERNAME, PASSWORD) VALUES (?, ?)''', (user, password))
-        self.db.commit()
-        self.db.close()
-        
+ 
     def login(self):
         # This checks if the user exists and if the password is correct
         user = self.username.value
         password = self.password.value
-        known = self.getUserLoginData(user)
+        known = getUserLoginData(user)
         if known is None:
             npyscreen.notify_confirm("User not found", title="Alert")
             return
@@ -128,9 +115,9 @@ class LoginForm(npyscreen.Form):
         # this creates new accounts
         user = self.username.value
         password = self.password.value
-        known = self.getUserLoginData(user)
+        known = getUserLoginData(user)
         if known is None:
-            self.saveUserLoginData(user, password)
+            saveUserLoginData(user, password)
             npyscreen.notify_confirm("Account Created", title="Alert")
             self.clear()
             self.parentApp.currentUser = user
@@ -158,6 +145,7 @@ class HomeForm(npyscreen.Form):
     def searchPasscode(self):
         # switch to the view logins form
         self.parentApp.setNextForm("Home")
+        self.parentApp.getForm("ViewLogins").nameline.value = ""
         self.parentApp.getForm("ViewLogins").fill()
         self.parentApp.switchForm("ViewLogins")
 
@@ -236,7 +224,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
     def fill(self, widget=None):
         # fill the grid with the login details
         currentuser = self.parentApp.currentUser
-        filter = self.nameline.value
+        filter = str(self.nameline.value)
         records = getUserData(currentuser)
         self.grid.values = []
         for record in records:
