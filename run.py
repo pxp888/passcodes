@@ -1,5 +1,5 @@
 import npyscreen
-import time 
+import time
 import hashlib
 import random 
 import sqlite3
@@ -24,7 +24,7 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.db.close()
 
         self.currentUser = None
-        self.master = None # this is the master password
+        self.masterPassword = None
 
     def onStart(self):
         # create forms and associate them with the app
@@ -79,7 +79,7 @@ class LoginForm(npyscreen.Form):
             if self.users[user] == hashlib.sha256(password.encode()).hexdigest():
                 self.parentApp.switchForm("Home")
                 self.parentApp.currentUser = user
-                self.parentApp.master = password
+                self.parentApp.masterPassword = password
                 return
             else:
                 npyscreen.notify_confirm("Incorrect Password", title="Alert")
@@ -122,7 +122,7 @@ class HomeForm(npyscreen.Form):
     def logout(self):
         # log user out and return to login form
         self.parentApp.currentUser = None
-        self.parentApp.master = None
+        self.parentApp.masterPassword = None
         self.parentApp.getForm("MAIN").clear()
         self.parentApp.switchForm("MAIN")
         
