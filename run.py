@@ -7,7 +7,7 @@ import sqlite3
 class MyTestApp(npyscreen.NPSAppManaged):
     def __init__(self):
         super().__init__()
-        
+
         self.db = sqlite3.connect('passcodes.db')
         self.db.execute('''CREATE TABLE IF NOT EXISTS passcodes
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,6 +26,7 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.currentUser = None
 
     def onStart(self):
+        # create forms and associate them with the app
         self.registerForm("MAIN", LoginForm())
         self.registerForm("Home", HomeForm())
         self.registerForm("CreateLogin", CreateLoginForm())
@@ -100,46 +101,43 @@ class LoginForm(npyscreen.Form):
 
 class HomeForm(npyscreen.Form):    
     def create(self):
+        # create the main menu
         self.heading = self.add(npyscreen.TitleText, name = "Passcodes Homeform", editable = False)
-        # add a menu to create, search, and delete passcodes
         self.add(npyscreen.FixedText, value="-" * 40, rely=3, editable=False)
         self.add(npyscreen.ButtonPress, name = "View Logins", when_pressed_function = self.searchPasscode)
         self.add(npyscreen.ButtonPress, name = "Create Login", when_pressed_function = self.createPasscode)
-        # self.add(npyscreen.ButtonPress, name = "Delete Login", when_pressed_function = self.deletePasscode)
         self.add(npyscreen.ButtonPress, name = "Logout", when_pressed_function = self.logout)
 
     def createPasscode(self):
+        # switch to the create login form
         self.parentApp.switchForm("CreateLogin")
 
     def searchPasscode(self):
+        # switch to the view logins form
         self.parentApp.setNextForm("Home")
         self.parentApp.getForm("ViewLogins").fill()
         self.parentApp.switchForm("ViewLogins")
 
-    def deletePasscode(self):
-        pass
-
     def logout(self):
+        # log user out and return to login form
         self.parentApp.currentUser = None
         self.parentApp.getForm("MAIN").clear()
         self.parentApp.switchForm("MAIN")
         
 class CreateLoginForm(npyscreen.ActionForm):
     def create(self):
+        # create form widgets
         self.heading = self.add(npyscreen.TitleText, name = "Create Login", editable = False)
         self.add(npyscreen.FixedText, value="-" * 40, rely=3, editable=False)
-
         self.name = self.add(npyscreen.TitleText, name = "Name:")
         self.url = self.add(npyscreen.TitleText, name = "URL:")
         self.username = self.add(npyscreen.TitleText, name = "Username:")
         self.password = self.add(npyscreen.TitleText, name = "Password:", editable = True)
-        
         self.add(npyscreen.ButtonPress, name = "generate", when_pressed_function = self.generate)
         self.add(npyscreen.TitleText, name = " ", editable = False)
-        
         self.add(npyscreen.FixedText, value="-" * 40, editable=False)
-        self.passLength = self.add(npyscreen.TitleSlider, name = "Password Length:", out_of=30, step=1, value=12, when_value_edited_function = self.generate)
-        self.passOptions = self.add(npyscreen.TitleMultiSelect, name = "Password Options:", value = [0,1] ,values = ["Numbers", "Symbols"], scroll_exit=True, when_value_edited_function = self.generate)
+        self.passLength = self.add(npyscreen.TitleSlider, name = "Password Length:", out_of=30, step=1, value=12)
+        self.passOptions = self.add(npyscreen.TitleMultiSelect, name = "Password Options:", value = [0,1] ,values = ["Numbers", "Symbols"], scroll_exit=True)
 
         self.passLength.value_changed_callback = self.generate
         self.passOptions.value_changed_callback = self.generate
@@ -187,18 +185,19 @@ class CreateLoginForm(npyscreen.ActionForm):
 
 class viewLoginForm(npyscreen.ActionFormMinimal):
     def create(self):
-        self.nameline = self.add(npyscreen.TitleText, name = "Name includes:", editable = True)
-        # self.add(npyscreen.ButtonPress, name = "Update", when_pressed_function = self.fill)
+        # create the form widgets
+        self.nameline = self.add(npyscreen.TitleText, name = "Name has:", editable = True)
+        self.add(npyscreen.FixedText, value="-" * 40, editable=False)
+        self.nameline.value_changed_callback = self.fill
         self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)
         
-        self.nameline.value_changed_callback = self.fill
-
-
     def fill(self, widget=None):
+        # fill the grid with the login details
         currentuser = self.parentApp.currentUser
         filter = self.nameline.value
         self.db = sqlite3.connect('passcodes.db')
-        cursor = self.db.execute('''SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes where OWNER = ?''', (currentuser,))
+        cursor = self.db.execute('''SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes where OWNER = ? ORDER BY NAME ASC   
+                                 ''', (currentuser,))
         self.grid.values = []
         for row in cursor:
             if not filter is None and len(filter) > 0:
@@ -208,10 +207,9 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         self.grid.display()
 
     def on_ok(self):
+        # return to home form
         self.parentApp.switchForm("Home")
     
-    def on_cancel(self):
-        self.parentApp.switchForm("Home")
 
 
 
