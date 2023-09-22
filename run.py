@@ -11,7 +11,6 @@ from cryptography.fernet import Fernet
 # The master password is hashed and stored in the database
 
 
-
 # CRYPTOGRAPHY FUNCTIONS
 
 # These are defined here to make it easier to change the encryption method later
@@ -103,9 +102,10 @@ def saveUserData(user, name, username, password, url, masterPassword):
 # MAIN APPLICATION
 
 class MyTestApp(npyscreen.NPSAppManaged):
+    # This is the main application instance.  
     def __init__(self):
-        super().__init__()
-
+        super(MyTestApp, self).__init__()
+        
         # setup the database 
         setupStorage()
         
@@ -285,13 +285,14 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         self.records = []
 
     def update(self):
+        # get the records from the database and fill the grid
         self.nameFilterLine.value = ""
         masterPassword = self.parentApp.masterPassword
         self.records = getUserData(self.parentApp.currentUser, masterPassword)
         self.fill()
         
     def fill(self, widget=None):
-        # fill the grid with the login details
+        # fill the grid with the login details, filtered by name
         filter = str(self.nameFilterLine.value)
         self.grid.values = []
         for record in self.records:
@@ -310,5 +311,4 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 if __name__ == '__main__':
     TA = MyTestApp()
     TA.run()
-
 
