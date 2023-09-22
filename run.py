@@ -8,21 +8,24 @@ class MyTestApp(npyscreen.NPSAppManaged):
     def __init__(self):
         super().__init__()
 
+        # create the database if it doesn't exist
         self.db = sqlite3.connect('passcodes.db')
         self.db.execute('''CREATE TABLE IF NOT EXISTS passcodes
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            OWNER TEXT NOT NULL,
-            NAME TEXT NOT NULL,
-            USERNAME TEXT NOT NULL,
-            PASSWORD TEXT NOT NULL,
-            URL TEXT NOT NULL);''')
+            OWNER TEXT,
+            NAME TEXT,
+            USERNAME TEXT,
+            PASSWORD TEXT,
+            URL TEXT);''')
         self.db.execute('''CREATE TABLE IF NOT EXISTS users
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            USERNAME TEXT NOT NULL,
-            PASSWORD TEXT NOT NULL);''')
+            USERNAME TEXT,
+            SALT TEXT,                                                                                                                                      
+            PASSWORD TEXT);''')
         self.db.commit()
         self.db.close()
 
+        # create variables to store the current user and master password
         self.currentUser = None
         self.masterPassword = None
 
