@@ -110,8 +110,10 @@ class LoginForm(npyscreen.Form):
         if known is None:
             npyscreen.notify_confirm("User not found", title="Alert")
             return
-        else:
-            if known[2] == hash(password+known[1]):
+        
+        try:
+            user, salt, passwordHash = known
+            if passwordHash == hash(password+salt):
                 self.parentApp.currentUser = user
                 self.parentApp.masterPassword = password
                 self.parentApp.switchForm("Home")
@@ -119,6 +121,9 @@ class LoginForm(npyscreen.Form):
             else:
                 npyscreen.notify_confirm("Incorrect Password", title="Alert")
                 return
+        except:
+            npyscreen.notify_confirm("Incorrect Password", title="Alert")
+            return
         
     def createAccount(self):
         # this creates new accounts
@@ -243,7 +248,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
             if filter.lower() in record[0].lower():
                 self.grid.values.append(record)
         self.grid.display()
-
+    
     def on_ok(self):
         # return to home form
         self.nameFilterLine.value = ""
