@@ -3,30 +3,37 @@ import hashlib
 import random 
 import sqlite3
 import npyscreen
+from cryptography.fernet import Fernet
 
 
-# create database tables if they don't exist
-db = sqlite3.connect('passcodes.db')
-db.execute('''CREATE TABLE IF NOT EXISTS passcodes
-    (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    OWNER TEXT,
-    NAME TEXT,
-    USERNAME TEXT,
-    PASSWORD TEXT,
-    URL TEXT);''')
-db.execute('''CREATE TABLE IF NOT EXISTS users
-    (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    USERNAME TEXT,
-    SALT TEXT,
-    PASSWORD TEXT);''')
-db.commit()
-db.close()
 
 # define helper functions
 
 def hash(plaintext):
     # this is a hash function
     return hashlib.sha256(plaintext.encode()).hexdigest()
+
+
+
+# define database functions, these need to be replaced if the storage method changes
+
+def setupStorage():
+    # create database tables if they don't exist
+    db = sqlite3.connect('passcodes.db')
+    db.execute('''CREATE TABLE IF NOT EXISTS passcodes
+        (ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        OWNER TEXT,
+        NAME TEXT,
+        USERNAME TEXT,
+        PASSWORD TEXT,
+        URL TEXT);''')
+    db.execute('''CREATE TABLE IF NOT EXISTS users
+        (ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        USERNAME TEXT,
+        SALT TEXT,
+        PASSWORD TEXT);''')
+    db.commit()
+    db.close()
 
 def getUserLoginData(user):
     # gets login data from the database
@@ -68,6 +75,9 @@ def saveUserData(user, name, username, password, url):
 class MyTestApp(npyscreen.NPSAppManaged):
     def __init__(self):
         super().__init__()
+
+        # setup the database 
+        setupStorage()
 
         self.currentUser = None
         self.masterPassword = None
@@ -145,8 +155,7 @@ class HomeForm(npyscreen.Form):
     def searchPasscode(self):
         # switch to the view logins form
         self.parentApp.setNextForm("Home")
-        self.parentApp.getForm("ViewLogins").nameline.value = ""
-        self.parentApp.getForm("ViewLogins").fill()
+        self.parentApp.getForm("ViewLogins").update()
         self.parentApp.switchForm("ViewLogins")
 
     def logout(self):
@@ -220,14 +229,18 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         self.add(npyscreen.FixedText, value="-" * 40, editable=False)
         self.nameline.value_changed_callback = self.fill
         self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)
+        self.records = []
+
+    def update(self):
+        self.nameline.value = ""
+        self.records = getUserData(self.parentApp.currentUser)
+        self.fill()
         
     def fill(self, widget=None):
         # fill the grid with the login details
-        currentuser = self.parentApp.currentUser
         filter = str(self.nameline.value)
-        records = getUserData(currentuser)
         self.grid.values = []
-        for record in records:
+        for record in self.records:
             if filter.lower() in record[0].lower():
                 self.grid.values.append(record)
         self.grid.display()
