@@ -7,6 +7,7 @@ import sqlite3
 class MyTestApp(npyscreen.NPSAppManaged):
     def __init__(self):
         super().__init__()
+        
         self.db = sqlite3.connect('passcodes.db')
         self.db.execute('''CREATE TABLE IF NOT EXISTS passcodes
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
