@@ -14,7 +14,6 @@ def hash(plaintext):
     return hashlib.sha256(plaintext.encode()).hexdigest()
 
 
-
 # define database functions, these need to be replaced if the storage method changes
 
 def setupStorage():
@@ -38,7 +37,7 @@ def setupStorage():
 def getUserLoginData(user):
     # gets login data from the database
     db = sqlite3.connect('passcodes.db')
-    cursor = db.execute('''SELECT USERNAME, PASSWORD FROM users WHERE USERNAME = ?''', (user,))
+    cursor = db.execute('''SELECT USERNAME, SALT, PASSWORD FROM users WHERE USERNAME = ?''', (user,))
     for row in cursor:
         db.close()
         return row
@@ -47,9 +46,10 @@ def getUserLoginData(user):
 
 def saveUserLoginData(user, password):
     # saves login data to the database
-    password = hash(password)
+    salt = str(random.randint(1000000000000000, 9999999999999999))
+    passwordHash = hash(password + salt)
     db = sqlite3.connect('passcodes.db')
-    db.execute('''INSERT INTO users (USERNAME, PASSWORD) VALUES (?, ?, ?)''', (user, password))
+    db.execute('''INSERT INTO users (USERNAME, SALT, PASSWORD) VALUES (?, ?, ?)''', (user, salt, passwordHash))
     db.commit()
     db.close()
 
@@ -111,7 +111,7 @@ class LoginForm(npyscreen.Form):
             npyscreen.notify_confirm("User not found", title="Alert")
             return
         else:
-            if known[1] == hash(password):
+            if known[2] == hash(password+known[1]):
                 self.parentApp.currentUser = user
                 self.parentApp.masterPassword = password
                 self.parentApp.switchForm("Home")
