@@ -284,39 +284,42 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         self.nameFilterLine = self.add(npyscreen.TitleText, name = "Name has:", editable = True)
         self.add(npyscreen.FixedText, value="\u2500" * 40, editable=False)
         self.nameFilterLine.value_changed_callback = self.fill
-        self.add(npyscreen.ButtonPress, name = "enable copy", when_pressed_function = self.rawmode)
-        self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)               
+        self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "URL"], selectable = True, select_whole_line = True)
+        self.grid.add_handlers({curses.ascii.NL: self.itemPicked})
         self.records = []
 
-    def rawmode(self):
-        # print the grid values to the terminal normally.  This is necessary to enable copy/paste in a terminal.  
+    def itemPicked(self, thing=None):
+        # display the selected login details
+        selected_row = self.grid.selected_row()
+
         curses.def_prog_mode()
         curses.endwin()
-        os.system('clear')
 
-        print("\n {: >12} {: >12} {: >32} {: >20} \n".format(*self.grid.col_titles))
+        os.system('clear')
+        print("\n {: >12} {: >12} {: >30} {: >20} \n".format(*["Name", "Username", "Password", "URL"]))
         print("\u2500" * 80)
-        for record in self.grid.values:
-             print("{: >12} {: >12} {: >32} {: >20}".format(*record))
-        
-        print('\nNote - Copy support depends depends on your terminal emulator. ')
-        print('Try selecting and copying using your mouse. \n')
-        
-        input('Press enter to continue...')
+        for record in self.records:
+            if record[0]==selected_row[0]:        
+                print("{: >12} {: >12} {: >30} {: >20}".format(*record))
+
+        input('\n\nPress enter to continue...')
         curses.reset_prog_mode()
 
     def update(self):
         # get the records from the database and fill the grid
         self.nameFilterLine.value = ""
-        masterPassword = self.parentApp.masterPassword
-        self.records = getUserData(self.parentApp.currentUser, masterPassword)
+        self.records = getUserData(self.parentApp.currentUser, self.parentApp.masterPassword)
         self.fill()
-        
+
     def fill(self, widget=None):
         # fill the grid with the login details, filtered by name
+        shownRecords = {}
+        for record in self.records:
+            shownRecords[record[0]] = [record[0], record[1], record[3]]
+
         filter = str(self.nameFilterLine.value)
         self.grid.values = []
-        for record in self.records:
+        for record in shownRecords.values():
             if filter.lower() in record[0].lower():
                 self.grid.values.append(record)
         self.grid.display()
