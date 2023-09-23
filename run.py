@@ -295,7 +295,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         os.system('clear')
 
         print("\n {: >15} {: >15} {: >32} {: >20} \n".format(*self.grid.col_titles))
-        print("\u2500" * 90)
+        print("\u2500" * 80)
         for record in self.grid.values:
              print("{: >15} {: >15} {: >32} {: >20}".format(*record))
         
