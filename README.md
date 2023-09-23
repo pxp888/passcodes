@@ -1,32 +1,32 @@
-![CI logo](https://codeinstitute.s3.amazonaws.com/fullstack/ci_logo_small.png)
+# Passcodes - simple password manager
 
-Welcome,
+[Live Link](https://passcodes-993cec8b97da.herokuapp.com/)
 
-This is the Code Institute student template for deploying your third portfolio project, the Python command-line project. The last update to this file was: **March 14, 2023**
 
-## Reminders
+## Description
+Passcodes is a very simple password manager written in Python. Each record consists of a name, username, password, and URL. 
 
-- Your code must be placed in the `run.py` file
-- Your dependencies must be placed in the `requirements.txt` file
-- Do not edit any of the other files or your code may not deploy properly
+## Features
+* Secure login 
+    * User accounts are created and associated with passwords that are hashed and salted.  Plaintext passwords are never stored.  
+* Create Login records
+    * Users can create records for each login they want to store.  Each record consists of a name, username, password, and URL.
+* Random Password generation
+    * Users can generate a random password of a specified length.  
+    * Options exist to include numbers or special symbols in the password.
+* Safe password storage
+    * Passwords are encrypted using the Fernet encryption scheme.  The encryption key is the users main password, which is not stored in the database.  
+* Dynamic Search
+    * Users can search for records by name. The search is dynamic, so results are updated as the user types.
+* Copy mode 
+    * The filtered records can be printed to screen in a way that enables users to copy information they may want.  This is useful for copying passwords to the clipboard.
 
-## Creating the Heroku app
 
-When you create the app, you will need to add two buildpacks from the _Settings_ tab. The ordering is as follows:
+## Technologies and Frameworks used
+* VSCode - IDE used for development
+* Python
+    * npyscreen - for creating the terminal user interface (TUI)
+    * cryptography - for encrypting and decrypting passwords
+* Github - for version control
+* Heroku - for deployment
 
-1. `heroku/python`
-2. `heroku/nodejs`
-
-You must then create a _Config Var_ called `PORT`. Set this to `8000`
-
-If you have credentials, such as in the Love Sandwiches project, you must create another _Config Var_ called `CREDS` and paste the JSON into the value field.
-
-Connect your GitHub repository and deploy as normal.
-
-## Constraints
-
-The deployment terminal is set to 80 columns by 24 rows. That means that each line of text needs to be 80 characters or less otherwise it will be wrapped onto a second line.
-
----
-
-Happy coding!
