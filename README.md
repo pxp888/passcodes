@@ -30,3 +30,66 @@ Passcodes is a very simple password manager written in Python. Each record consi
 * Github - for version control
 * Heroku - for deployment
 
+
+## Logic Flow
+
+### Login flowchart
+
+![Login flowchart](assets/images/loginflow.webp)
+
+### Create record flowchart
+
+![Create record flowchart](assets/images/createflow.webp)
+
+### View records flowchart
+
+![View records flowchart](assets/images/viewflow.webp)
+
+
+
+
+## Login in flow
+~~~mermaid
+graph TD
+a(Login Screen Showing)
+b(username and password entered)
+c(login selected)
+d(create account selected)
+e[user known]
+f[password hash matches]
+g(home screen)
+h[user known]
+i(create user)
+
+a-->b-->c & d
+c --> e
+e --yes--> f --yes--> g
+e & f -. no .-> b
+d-->h
+h -.yes.-> b
+h --no--> i --> g
+g --> c1(create login) & vl(view logins) & lo(logout)
+lo -.-> a
+~~~
+
+
+## Create Entry flowchart
+~~~mermaid
+graph TD
+hs(home screen)-->cl(create login screen)
+cl-->pl(password length changed)-->g(generate new password)-.->cl
+cl-->o1(password options changed)-->g
+cl-->ok(OK selected)-->ar(add record to database)-.->hs
+cl-->cn(cancel selected)-.->hs
+~~~
+
+
+## View entries flowchart
+~~~mermaid
+graph TD
+hs(home screen)-->vl(view logins)
+
+vl-->ok(OK Selected)-.->hs
+vl-->nc(name filter changed)-->up(update list)-.->vl
+vl-->cm(copy mode selected)-->sc(show copy friendly screen)-->sc2(wait for input)-.->vl
+~~~
