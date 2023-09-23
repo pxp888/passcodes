@@ -294,10 +294,10 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         curses.endwin()
         os.system('clear')
 
-        print("\n {: >15} {: >15} {: >32} {: >20} \n".format(*self.grid.col_titles))
+        print("\n {: >12} {: >12} {: >32} {: >20} \n".format(*self.grid.col_titles))
         print("\u2500" * 80)
         for record in self.grid.values:
-             print("{: >15} {: >15} {: >32} {: >20}".format(*record))
+             print("{: >12} {: >12} {: >32} {: >20}".format(*record))
         
         print('\nNote - Copy support depends depends on your terminal emulator. ')
         print('Try selecting and copying using your mouse. \n')
