@@ -1,10 +1,8 @@
 import os 
-import sys 
 import time
 import hashlib
 import random 
 import base64
-import sqlite3
 import psycopg2
 import curses
 import npyscreen
@@ -49,7 +47,7 @@ import psycopg2
 def setupStorage():
     # create database tables if they don't exist
     conn = psycopg2.connect(
-        host="localhost",
+        host="52.56.34.125",
         database="postgres",
         user="postgres",
         password="mysecretpassword"
@@ -74,7 +72,7 @@ def setupStorage():
 def getUserLoginData(username):
     # gets login data from the database
     conn = psycopg2.connect(
-        host="localhost",
+        host="52.56.34.125",
         database="postgres",
         user="postgres",
         password="mysecretpassword"
@@ -94,7 +92,7 @@ def saveUserLoginData(username, password):
     salt = str(random.randint(1000000000000000, 9999999999999999))
     passwordHash = str(hash(password + salt))
     conn = psycopg2.connect(
-        host="localhost",
+        host="52.56.34.125",
         database="postgres",
         user="postgres",
         password="mysecretpassword"
@@ -108,7 +106,7 @@ def saveUserLoginData(username, password):
 def getUserData(owner, masterPassword):
     # gets records for a user from the database
     conn = psycopg2.connect(
-        host="localhost",
+        host="52.56.34.125",
         database="postgres",
         user="postgres",
         password="mysecretpassword"
@@ -128,7 +126,7 @@ def saveUserData(owner, name, username, password, url, masterPassword):
     # saves records for a user to the database
     password = encrypt(password, masterPassword)
     conn = psycopg2.connect(
-        host="localhost",
+        host="52.56.34.125",
         database="postgres",
         user="postgres",
         password="mysecretpassword"
