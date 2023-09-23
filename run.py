@@ -313,6 +313,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 
     def fill(self, widget=None):
         # fill the grid with the login details, filtered by name
+        if self.records == []: return 
         shownRecords = {}
         for record in self.records:
             shownRecords[record[0]] = [record[0], record[1], record[3]]

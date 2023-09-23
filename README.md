@@ -16,10 +16,25 @@ Passcodes is a very simple password manager written in Python. Each record consi
     * Options exist to include numbers or special symbols in the password.
 * __Safe password storage__
     * Passwords are encrypted using the Fernet encryption scheme.  The encryption key is the users main password, which is not stored in the database.  
-* __Dynamic Search__
+* __Dynamic Search by name__
     * Users can search for records by name. The search is dynamic, so results are updated as the user types.
-* __Copy friendly mode__
-    * The filtered records can be printed to screen in a way that enables users to copy information they may want.  This is useful for copying passwords to the clipboard.
+
+
+## Cryptographic Security
+### Primary User Passwords
+The primary user passwords, or master passwords are not stored in the database.  Each password is assigned a salt value, and the password plus the salt value are hashed using the SHA256 algorithm.  
+
+The salt value is stored in the database, and the hashed password is stored in the database.  
+
+When a user attempts to login, the salt value is retrieved from the database, and the password entered by the user is hashed using the same salt value.  
+
+If the hashed password matches the hashed password in the database, the user is logged in.  If the hashed passwords do not match, the user is not logged in.
+
+### Login Passwords
+The passwords for each login record are encrypted using the Fernet encryption scheme.  The encryption key is the users master password.  
+
+The master password is not stored in the database, so the login passwords cannot be decrypted without the master password.
+
 
 
 ## Technologies and Frameworks used
@@ -36,7 +51,7 @@ Passcodes is a very simple password manager written in Python. Each record consi
 ### Login in flowchart
 ~~~mermaid
 graph TD
-a(Login Screen Showing)
+a(Login Screen)
 b(username and password entered)
 c(login selected)
 d(create account selected)
@@ -64,7 +79,10 @@ graph TD
 hs(home screen)-->cl(create login screen)
 cl-->pl(password length changed)-->g(generate new password)-.->cl
 cl-->o1(password options changed)-->g
-cl-->ok(OK selected)-->ar(add record to database)-.->hs
+cl-->ok(OK selected)
+ok-->nv[name is valid]--yes-->ar
+nv-.no.->cl
+ar(add record to database)-.->hs
 cl-->cn(cancel selected)-.->hs
 ~~~
 
@@ -76,7 +94,7 @@ hs(home screen)-->vl(view logins)
 
 vl-->ok(OK Selected)-.->hs
 vl-->nc(name filter changed)-->up(update list)-.->vl
-vl-->cm(copy mode selected)-->sc(show copy friendly screen)-->sc2(wait for input)-.->vl
+vl-->is(item selected)-->sd(show details)-->wt(wait for input)-.->vl
 ~~~
 
 
