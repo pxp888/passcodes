@@ -5,6 +5,7 @@ import hashlib
 import random 
 import base64
 import sqlite3
+import psycopg2
 import curses
 import npyscreen
 from cryptography.fernet import Fernet
@@ -42,65 +43,101 @@ def decrypt(ciphertext, key):
 # These are defined here to make it easier to change the database later.  
 # These five functions are the only ones that interact with the database.  
 
+
+import psycopg2
+
 def setupStorage():
     # create database tables if they don't exist
-    db = sqlite3.connect('passcodes.db')
-    db.execute('''CREATE TABLE IF NOT EXISTS passcodes
-        (ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    conn = psycopg2.connect(
+        host="localhost",
+        database="postgres",
+        user="postgres",
+        password="mysecretpassword"
+    )
+    cur = conn.cursor()
+    cur.execute('''CREATE TABLE IF NOT EXISTS passcodes
+        (ID SERIAL PRIMARY KEY,
         OWNER TEXT,
         NAME TEXT,
         USERNAME TEXT,
         PASSWORD TEXT,
         URL TEXT);''')
-    db.execute('''CREATE TABLE IF NOT EXISTS users
-        (ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    cur.execute('''CREATE TABLE IF NOT EXISTS users
+        (ID SERIAL PRIMARY KEY,
         USERNAME TEXT,
         SALT TEXT,
         PASSWORD TEXT);''')
-    db.commit()
-    db.close()
+    conn.commit()
+    cur.close()
+    conn.close()
 
-def getUserLoginData(user):
+def getUserLoginData(username):
     # gets login data from the database
-    db = sqlite3.connect('passcodes.db')
-    cursor = db.execute('''SELECT USERNAME, SALT, PASSWORD FROM users WHERE USERNAME = ?''', (user,))
-    for row in cursor:
-        db.close()
-        return row
-    db.close()
-    return None
+    conn = psycopg2.connect(
+        host="localhost",
+        database="postgres",
+        user="postgres",
+        password="mysecretpassword"
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT USERNAME, SALT, PASSWORD FROM users WHERE USERNAME = %s", (username,))
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    if result is None:
+        return None
+    else:
+        return result 
 
-def saveUserLoginData(user, password):
+def saveUserLoginData(username, password):
     # saves login data to the database
     salt = str(random.randint(1000000000000000, 9999999999999999))
-    passwordHash = hash(password + salt)
-    db = sqlite3.connect('passcodes.db')
-    db.execute('''INSERT INTO users (USERNAME, SALT, PASSWORD) VALUES (?, ?, ?)''', (user, salt, passwordHash))
-    db.commit()
-    db.close()
+    passwordHash = str(hash(password + salt))
+    conn = psycopg2.connect(
+        host="localhost",
+        database="postgres",
+        user="postgres",
+        password="mysecretpassword"
+    )
+    cur = conn.cursor()
+    cur.execute("INSERT INTO users (USERNAME, SALT, PASSWORD) VALUES (%s, %s, %s)", (username, salt, passwordHash))
+    conn.commit()
+    cur.close()
+    conn.close()
 
-def getUserData(user, masterPassword):
+def getUserData(owner, masterPassword):
     # gets records for a user from the database
-    records = []
-    db = sqlite3.connect('passcodes.db')
-    cursor = db.execute('''SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes WHERE OWNER = ?''', (user,))
-    for row in cursor:
-        records.append(row)
-    db.close()
+    conn = psycopg2.connect(
+        host="localhost",
+        database="postgres",
+        user="postgres",
+        password="mysecretpassword"
+    )
+    cur = conn.cursor()
+    cur.execute("SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes WHERE OWNER = %s", (owner,))
+    records = cur.fetchall()
+    cur.close()
+    conn.close()
 
     for i in range(len(records)):
         name, username, password, url = records[i]
         records[i] = (name, username, decrypt(password, masterPassword), url)
     return records
 
-def saveUserData(user, name, username, password, url, masterPassword):
+def saveUserData(owner, name, username, password, url, masterPassword):
     # saves records for a user to the database
     password = encrypt(password, masterPassword)
-    db = sqlite3.connect('passcodes.db')
-    db.execute('''INSERT INTO passcodes (OWNER, NAME, USERNAME, PASSWORD, URL) VALUES (?, ?, ?, ?, ?)''', (user, name, username, password, url))
-    db.commit()
-    db.close()
-
+    conn = psycopg2.connect(
+        host="localhost",
+        database="postgres",
+        user="postgres",
+        password="mysecretpassword"
+    )
+    cur = conn.cursor()
+    cur.execute("INSERT INTO passcodes (OWNER, NAME, USERNAME, PASSWORD, URL) VALUES (%s, %s, %s, %s, %s)", (owner, name, username, password, url))
+    conn.commit()
+    cur.close()
+    conn.close()
 
 # MAIN APPLICATION
 
@@ -109,8 +146,6 @@ class MyTestApp(npyscreen.NPSAppManaged):
     def __init__(self):
         super(MyTestApp, self).__init__()
         
-        # setup the database 
-        setupStorage()
         
         self.currentUser = None
         self.masterPassword = None
@@ -149,7 +184,7 @@ class LoginForm(npyscreen.Form):
         
         try:
             user, salt, passwordHash = known
-            if passwordHash == hash(password+salt):
+            if passwordHash == str(hash(password+salt)):
                 self.parentApp.currentUser = user
                 self.parentApp.masterPassword = password
                 self.parentApp.switchForm("Home")
@@ -165,6 +200,13 @@ class LoginForm(npyscreen.Form):
         # this creates new accounts
         user = self.username.value
         password = self.password.value
+        if user == "":
+            npyscreen.notify_confirm("Username is required", title="Alert")
+            return
+        if password == "":
+            npyscreen.notify_confirm("Password is required", title="Alert")
+            return
+
         known = getUserLoginData(user)
         if known is None:
             saveUserLoginData(user, password)
@@ -295,7 +337,10 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 
     def itemPicked(self, thing=None):
         # display the selected login details
-        selected_row = self.grid.selected_row()
+        try:
+            selected_row = self.grid.selected_row()
+        except:
+            return 
 
         curses.def_prog_mode()
         curses.endwin()
@@ -318,7 +363,9 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 
     def fill(self, widget=None):
         # fill the grid with the login details, filtered by name
-        if self.records == []: return 
+        if self.records == []: 
+            self.grid.values = []
+            return 
         shownRecords = {}
         for record in self.records:
             shownRecords[record[0]] = [record[0], record[1], record[3]]
@@ -339,6 +386,10 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 
 
 if __name__ == '__main__':
+    # setup the database 
+    setupStorage()
+
+    #run the app     
     TA = MyTestApp()
     TA.run()
 
