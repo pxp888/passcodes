@@ -1,4 +1,5 @@
 import os 
+import sys 
 import time
 import hashlib
 import random 
@@ -189,7 +190,7 @@ class HomeForm(npyscreen.Form):
         self.add(npyscreen.ButtonPress, name = "View Logins", when_pressed_function = self.searchPasscodes)
         self.add(npyscreen.ButtonPress, name = "Create Login", when_pressed_function = self.createPasscode)
         self.add(npyscreen.ButtonPress, name = "Logout", when_pressed_function = self.logout)
-        self.add(npyscreen.ButtonPress, name = "Exit", when_pressed_function = self.exit)
+        # self.add(npyscreen.ButtonPress, name = "Exit", when_pressed_function = self.exit)   # This is commented out for heroku deployment, uncomment to run locally. 
 
     def exit(self):
         self.parentApp.switchForm(None)
@@ -210,7 +211,7 @@ class HomeForm(npyscreen.Form):
         self.parentApp.masterPassword = None
         self.parentApp.getForm("MAIN").clear()
         self.parentApp.switchForm("MAIN")
-        
+
 class CreateLoginForm(npyscreen.ActionForm):
     # This form allows the user to create a new login record.  
 
@@ -281,7 +282,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
     def create(self):
         # create the form widgets
         self.nameFilterLine = self.add(npyscreen.TitleText, name = "Name has:", editable = True)
-        self.add(npyscreen.FixedText, value="-" * 40, editable=False)
+        self.add(npyscreen.FixedText, value="\u2500" * 40, editable=False)
         self.nameFilterLine.value_changed_callback = self.fill
         self.add(npyscreen.ButtonPress, name = "enable copy", when_pressed_function = self.rawmode)
         self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)               
@@ -294,9 +295,13 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         os.system('clear')
 
         print("\n {: >15} {: >15} {: >32} {: >20} \n".format(*self.grid.col_titles))
+        print("\u2500" * 90)
         for record in self.grid.values:
              print("{: >15} {: >15} {: >32} {: >20}".format(*record))
-        print('\n')
+        
+        print('\nNote - Copy support depends depends on your terminal emulator. ')
+        print('Try selecting and copying using your mouse. \n')
+        
         input('Press enter to continue...')
         curses.reset_prog_mode()
 
