@@ -52,13 +52,13 @@ The master password is not stored in the database, so the login passwords cannot
 ~~~mermaid
 graph TD
 a(Login Screen)
-b(username and password entered)
+b(username and password entry)
 c(login selected)
 d(create account selected)
-e[user known]
-f[password hash matches]
+e{{user known}}
+f{{password hash matches}}
 g(home screen)
-h[user known]
+h{{user known}}
 i(create user)
 
 a-->b-->c & d
@@ -80,7 +80,7 @@ hs(home screen)-->cl(create login screen)
 cl-->pl(password length changed)-->g(generate new password)-.->cl
 cl-->o1(password options changed)-->g
 cl-->ok(OK selected)
-ok-->nv[name is valid]--yes-->ar
+ok-->nv{{name is valid}}--yes-->ar
 nv-.no.->cl
 ar(add record to database)-.->hs
 cl-->cn(cancel selected)-.->hs

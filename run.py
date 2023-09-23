@@ -268,6 +268,11 @@ class CreateLoginForm(npyscreen.ActionForm):
 
     def on_ok(self):
         # save the login to the database
+
+        if self.name.value == "":
+            npyscreen.notify_confirm("Name field is required", title="Alert")
+            return
+
         currentuser = self.parentApp.currentUser
         masterPassword = self.parentApp.masterPassword
         saveUserData(currentuser, self.name.value, self.username.value, self.password.value, self.url.value, masterPassword)
