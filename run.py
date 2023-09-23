@@ -1,8 +1,10 @@
+import os 
 import time
 import hashlib
 import random 
 import base64
 import sqlite3
+import curses
 import npyscreen
 from cryptography.fernet import Fernet
 
@@ -281,8 +283,22 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         self.nameFilterLine = self.add(npyscreen.TitleText, name = "Name has:", editable = True)
         self.add(npyscreen.FixedText, value="-" * 40, editable=False)
         self.nameFilterLine.value_changed_callback = self.fill
-        self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)
+        self.add(npyscreen.ButtonPress, name = "enable copy", when_pressed_function = self.rawmode)
+        self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "Password", "URL"], editable = False)               
         self.records = []
+
+    def rawmode(self):
+        # print the grid values to the terminal normally.  This is necessary to enable copy/paste in a terminal.  
+        curses.def_prog_mode()
+        curses.endwin()
+        os.system('clear')
+
+        print("\n {: >15} {: >15} {: >32} {: >20} \n".format(*self.grid.col_titles))
+        for record in self.grid.values:
+             print("{: >15} {: >15} {: >32} {: >20}".format(*record))
+        print('\n')
+        input('Press enter to continue...')
+        curses.reset_prog_mode()
 
     def update(self):
         # get the records from the database and fill the grid
