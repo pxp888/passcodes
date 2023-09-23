@@ -86,7 +86,7 @@ cl-->cn(cancel selected)-.->hs
 
 ## View entries flowchart
 ~~~mermaid
-graph TD
+flowchart TD
 hs(home screen)-->vl(view logins)
 
 vl-->ok(OK Selected)-.->hs
