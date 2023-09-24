@@ -39,21 +39,37 @@ def decrypt(ciphertext, key):
 # DATABASE FUNCTIONS
 
 # These are defined here to make it easier to change the database later.  
-# These five functions are the only ones that interact with the database.  
+# These functions are the only ones that interact with the database.  
+
+db_connection = None
+
+def getDBConnection():
+    db_ip = os.environ.get('DB_IP')
+    if db_ip is None: db_ip = "localhost"
+    
+    global db_connection
+    if db_connection is None or db_connection.closed != 0:
+        try:
+            db_connection = psycopg2.connect(
+                host=db_ip,
+                database="postgres",
+                user="postgres",
+                password="mysecretpassword"
+            )
+        except psycopg2.OperationalError:
+            # if the connection times out, re-establish it
+            db_connection = psycopg2.connect(
+                host=db_ip,
+                database="postgres",
+                user="postgres",
+                password="mysecretpassword"
+            )
+    return db_connection
 
 
 def setupStorage():
     # create database tables if they don't exist
-    
-    db_ip = os.environ.get('DB_IP')
-    if db_ip is None: db_ip = "localhost"
-    
-    conn = psycopg2.connect(
-        host=db_ip,
-        database="postgres",
-        user="postgres",
-        password="mysecretpassword"
-    )
+    conn = getDBConnection()
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS passcodes
         (ID SERIAL PRIMARY KEY,
@@ -69,24 +85,16 @@ def setupStorage():
         PASSWORD TEXT);''')
     conn.commit()
     cur.close()
-    conn.close()
+    
 
 def getUserLoginData(username):
     # gets login data from the database
-    db_ip = os.environ.get('DB_IP')
-    if db_ip is None: db_ip = "localhost"
-
-    conn = psycopg2.connect(
-        host=db_ip,
-        database="postgres",
-        user="postgres",
-        password="mysecretpassword"
-    )
+    conn = getDBConnection()
     cur = conn.cursor()
     cur.execute("SELECT USERNAME, SALT, PASSWORD FROM users WHERE USERNAME = %s", (username,))
     result = cur.fetchone()
     cur.close()
-    conn.close()
+
     if result is None:
         return None
     else:
@@ -97,36 +105,22 @@ def saveUserLoginData(username, password):
     salt = str(random.randint(1000000000000000, 9999999999999999))
     passwordHash = str(hash(password + salt))
     
-    db_ip = os.environ.get('DB_IP')
-    if db_ip is None: db_ip = "localhost"    
-    conn = psycopg2.connect(
-        host=db_ip,
-        database="postgres",
-        user="postgres",
-        password="mysecretpassword"
-    )
+    conn = getDBConnection()
     cur = conn.cursor()
     cur.execute("INSERT INTO users (USERNAME, SALT, PASSWORD) VALUES (%s, %s, %s)", (username, salt, passwordHash))
     conn.commit()
     cur.close()
-    conn.close()
+
 
 def getUserData(owner, masterPassword):
     # gets records for a user from the database
 
-    db_ip = os.environ.get('DB_IP')
-    if db_ip is None: db_ip = "localhost"
-    conn = psycopg2.connect(
-        host=db_ip,
-        database="postgres",
-        user="postgres",
-        password="mysecretpassword"
-    )
+    conn = getDBConnection()
     cur = conn.cursor()
     cur.execute("SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes WHERE OWNER = %s", (owner,))
     records = cur.fetchall()
     cur.close()
-    conn.close()
+
 
     for i in range(len(records)):
         name, username, password, url = records[i]
@@ -136,19 +130,12 @@ def getUserData(owner, masterPassword):
 def saveUserData(owner, name, username, password, url, masterPassword):
     # saves records for a user to the database
     password = encrypt(password, masterPassword)
-    db_ip = os.environ.get('DB_IP')
-    if db_ip is None: db_ip = "localhost"
-    conn = psycopg2.connect(
-        host=db_ip,
-        database="postgres",
-        user="postgres",
-        password="mysecretpassword"
-    )
+
+    conn = getDBConnection()
     cur = conn.cursor()
     cur.execute("INSERT INTO passcodes (OWNER, NAME, USERNAME, PASSWORD, URL) VALUES (%s, %s, %s, %s, %s)", (owner, name, username, password, url))
     conn.commit()
     cur.close()
-    conn.close()
 
 # MAIN APPLICATION
 
