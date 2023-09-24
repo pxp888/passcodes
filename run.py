@@ -42,12 +42,14 @@ def decrypt(ciphertext, key):
 # These five functions are the only ones that interact with the database.  
 
 
-import psycopg2
-
 def setupStorage():
     # create database tables if they don't exist
+    
+    db_ip = os.environ.get('DB_IP')
+    if db_ip is None: db_ip = "localhost"
+    
     conn = psycopg2.connect(
-        host="52.56.34.125",
+        host=db_ip,
         database="postgres",
         user="postgres",
         password="mysecretpassword"
@@ -71,8 +73,11 @@ def setupStorage():
 
 def getUserLoginData(username):
     # gets login data from the database
+    db_ip = os.environ.get('DB_IP')
+    if db_ip is None: db_ip = "localhost"
+
     conn = psycopg2.connect(
-        host="52.56.34.125",
+        host=db_ip,
         database="postgres",
         user="postgres",
         password="mysecretpassword"
@@ -91,8 +96,11 @@ def saveUserLoginData(username, password):
     # saves login data to the database
     salt = str(random.randint(1000000000000000, 9999999999999999))
     passwordHash = str(hash(password + salt))
+    
+    db_ip = os.environ.get('DB_IP')
+    if db_ip is None: db_ip = "localhost"    
     conn = psycopg2.connect(
-        host="52.56.34.125",
+        host=db_ip,
         database="postgres",
         user="postgres",
         password="mysecretpassword"
@@ -105,8 +113,11 @@ def saveUserLoginData(username, password):
 
 def getUserData(owner, masterPassword):
     # gets records for a user from the database
+
+    db_ip = os.environ.get('DB_IP')
+    if db_ip is None: db_ip = "localhost"
     conn = psycopg2.connect(
-        host="52.56.34.125",
+        host=db_ip,
         database="postgres",
         user="postgres",
         password="mysecretpassword"
@@ -125,8 +136,10 @@ def getUserData(owner, masterPassword):
 def saveUserData(owner, name, username, password, url, masterPassword):
     # saves records for a user to the database
     password = encrypt(password, masterPassword)
+    db_ip = os.environ.get('DB_IP')
+    if db_ip is None: db_ip = "localhost"
     conn = psycopg2.connect(
-        host="52.56.34.125",
+        host=db_ip,
         database="postgres",
         user="postgres",
         password="mysecretpassword"
