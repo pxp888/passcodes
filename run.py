@@ -66,7 +66,6 @@ def getDBConnection():
             )
     return db_connection
 
-
 def setupStorage():
     # create database tables if they don't exist
     conn = getDBConnection()
@@ -86,7 +85,6 @@ def setupStorage():
     conn.commit()
     cur.close()
     
-
 def getUserLoginData(username):
     # gets login data from the database
     conn = getDBConnection()
@@ -111,7 +109,6 @@ def saveUserLoginData(username, password):
     conn.commit()
     cur.close()
 
-
 def getUserData(owner, masterPassword):
     # gets records for a user from the database
 
@@ -120,7 +117,6 @@ def getUserData(owner, masterPassword):
     cur.execute("SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes WHERE OWNER = %s", (owner,))
     records = cur.fetchall()
     cur.close()
-
 
     for i in range(len(records)):
         name, username, password, url = records[i]
@@ -136,6 +132,7 @@ def saveUserData(owner, name, username, password, url, masterPassword):
     cur.execute("INSERT INTO passcodes (OWNER, NAME, USERNAME, PASSWORD, URL) VALUES (%s, %s, %s, %s, %s)", (owner, name, username, password, url))
     conn.commit()
     cur.close()
+
 
 # MAIN APPLICATION
 
@@ -217,7 +214,6 @@ class LoginForm(npyscreen.Form):
         else:
             npyscreen.notify_confirm("User already exists", title="Alert")
             return
-
 
 class HomeForm(npyscreen.Form):
     # this is a simple form that acts as the main menu for the application.  

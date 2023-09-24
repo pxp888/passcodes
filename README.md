@@ -42,8 +42,13 @@ The master password is not stored in the database, so the login passwords cannot
 * Python
     * npyscreen - for creating the terminal user interface (TUI)
     * cryptography - for encrypting and decrypting passwords
+    * psycopg2 - for connecting to the database
+
 * Github - for version control
-* Heroku - for deployment
+* Heroku - for deployment of the app itself
+* PostgreSQL - for database storage
+* Docker - containerization of PostgreSQL database
+* AWS EC2 - for hosting the database container
 
 
 ## Logic Flow
@@ -96,5 +101,20 @@ vl-->ok(OK Selected)-.->hs
 vl-->nc(name filter changed)-->up(update list)-.->vl
 vl-->is(item selected)-->sd(show details)-->wt(wait for input)-.->vl
 ~~~
+
+
+## Deployment
+The app itself is deployed on Heroku, using a github template from Code Institute to provide the terminal emulator.  
+
+The database is deployed on AWS EC2, using a docker container running with an ubuntu host.  The database is a PostgreSQL database.
+
+The database is accessed by the app using the psycopg2 library.  The database URL is stored in an environment variable on Heroku.  
+
+### next deployment steps
+* __move database to Heroku__
+    * I happened to have an AWS EC2 instance running, so I used that to host the database.  I would like to move the database to Heroku.  
+
+* __move database password to environment variable__
+    * The database password is currently stored in the code.  I would like to move it to an environment variable.
 
 
