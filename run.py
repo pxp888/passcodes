@@ -40,10 +40,12 @@ def decrypt(ciphertext, key):
 
 # These are defined here to make it easier to change the database later.  
 # These functions are the only ones that interact with the database.  
+# There is one global variable to store the database connection.
 
 db_connection = None
 
 def getDBConnection():
+    db_pw = os.environ.get('DB_PW')
     db_ip = os.environ.get('DB_IP')
     if db_ip is None: db_ip = "localhost"
     
@@ -54,7 +56,7 @@ def getDBConnection():
                 host=db_ip,
                 database="postgres",
                 user="postgres",
-                password="mysecretpassword"
+                password=db_pw
             )
         except psycopg2.OperationalError:
             # if the connection times out, re-establish it
@@ -62,7 +64,7 @@ def getDBConnection():
                 host=db_ip,
                 database="postgres",
                 user="postgres",
-                password="mysecretpassword"
+                password=db_pw
             )
     return db_connection
 
