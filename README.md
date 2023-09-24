@@ -51,7 +51,7 @@ The master password is not stored in the database, so the login passwords cannot
 * AWS EC2 - for hosting the database container
 
 
-## Logic Flow
+## Interface Flowchart
 
 There are five main forms that the user interacts with.  
 
@@ -74,49 +74,45 @@ vl<-->vd
 graph TD
 lg[[login form]]
 de(username and password entry)
-ls(login selected)
-cs(create account selected)
+ls(Login)
+cs(Create account )
 uk1{{username known}}
 uk2{{username known}}
 pw1{{password hash correct}}
 hs[[home screen]]
-ad(add user to database)
+ad[(add user to database)]
+pv{{password valid}}
 
-lg-->de
-de-->ls
-ls-->uk1
-uk1-.->|no|de
-uk1-->|yes|pw1
-pw1-.->|no|de
-pw1-->|yes|hs
-
-de-->cs
-cs-->uk2
-uk2-.->|yes|de
-uk2-->|no|ad
-ad-->hs
+lg-->de & ls & cs
+ls-->uk1-->|yes|pw1-->|yes|hs
+pw1-.->|no|lg
+uk1-.->|no|lg
+cs-->uk2-->|no|pv-->|yes|ad-->hs
+pv-.->|no|lg 
+uk2-.->|yes|lg
 ~~~
 
 ### create login flowchart
 ~~~mermaid
 graph TD
+
 hs[[home screen]]
 cl[[create login form]]
-de(data entry)
-pc1(password options changed)
-pc2(password length changed)
-gp(generate new password)
-ok(OK pressed)
-ok1{{details valid}}
-add(add login to database)
-cancel(cancel pressed)
+gp(generate random password)
 
-hs-->cl
-cl-->de
-de-->pc1 & pc2 -->gp-.->de
-de-->ok-->ok1-->|yes|add-.->hs
-ok1-.->|no|de
-de-->cancel-.->hs
+ok(OK selected)
+nv{{name is valid}}
+add[(add login to database)]
+
+op1(password options changed)
+
+hs<-->cl
+cl-->ok & op1 
+
+ok-->nv
+nv-.->|no|cl
+nv-->|yes|add-.->hs
+op1-->gp-.->cl
 ~~~
 
 ### view logins flowchart
@@ -127,11 +123,11 @@ hs[[home screen]]
 vl[[view logins form]]
 
 nf(names filtered)
-hs-->vl
+hs<-->vl
 vl-->nf-->ul1(update list)-.->vl
 
-vl-->ns(name selected)<-->sd[[view details]]
-vl-->ok(OK pressed)-.->hs
+vl<-->ns(name selected)-->sd[[view details]]
+sd-->wt(wait for input)-.->vl
 ~~~
 
 ## Deployment

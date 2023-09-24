@@ -40,7 +40,7 @@ def decrypt(ciphertext, key):
 
 # These are defined here to make it easier to change the database later.  
 # These functions are the only ones that interact with the database.  
-# There is one global variable to store the database connection.
+# There is one global variable to store the database connection, and make it available to all functions.
 
 db_connection = None
 
@@ -142,8 +142,7 @@ class MyTestApp(npyscreen.NPSAppManaged):
     # This is the main application instance.  
     def __init__(self):
         super(MyTestApp, self).__init__()
-        
-        
+        # the current user and master password are stored here, to make them available to all forms.  
         self.currentUser = None
         self.masterPassword = None
         
@@ -155,7 +154,9 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.registerForm("ViewLogins", viewLoginForm())
 
 class LoginForm(npyscreen.Form):
-    # This is the login screen form that handles logging in and creating new accounts
+    # This is the login screen form that handles logging in and creating new accounts.  
+    # There are two buttons, one to login and one to create a new account.
+    # There are also text fields for username and password entry.  
 
     def create(self):
         # This creates the form
@@ -178,7 +179,6 @@ class LoginForm(npyscreen.Form):
         if known is None:
             npyscreen.notify_confirm("User not found", title="Alert")
             return
-        
         try:
             user, salt, passwordHash = known
             if passwordHash == str(hash(password+salt)):
@@ -219,7 +219,7 @@ class LoginForm(npyscreen.Form):
 
 class HomeForm(npyscreen.Form):
     # this is a simple form that acts as the main menu for the application.  
-    # it allows the user to create new logins, view existing logins, logout, or exit the application
+    # it allows the user to create new logins, view existing logins, or logout and return to the login screen. 
 
     def create(self):
         # create the main menu
