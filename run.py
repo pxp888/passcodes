@@ -1,9 +1,12 @@
+import sys 
 import npyscreen
 
-from loginform import *
-from homeform import *
-from createloginform import *
-from viewloginform import *
+sys.path.append("assets/python")
+
+from assets.python.loginform import *
+from assets.python.homeform import *
+from assets.python.createloginform import *
+from assets.python.viewloginform import *
 
 
 # This is a simple password manager that uses a master password to encrypt
