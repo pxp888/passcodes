@@ -1,6 +1,6 @@
 import npyscreen
 
-from helpers import * 
+from helpers import *
 
 
 class LoginForm(npyscreen.Form):
@@ -31,12 +31,12 @@ class LoginForm(npyscreen.Form):
         if password == "":
             npyscreen.notify_confirm("Password is required", title="Alert")
             return
-        
+
         known = getUserLoginData(user)
         if known is None:
             npyscreen.notify_confirm("User not found", title="Alert")
             return
-        
+
         user, salt, passwordHash = known
         if passwordHash == str(hash(password+salt)):
             self.parentApp.currentUser = user

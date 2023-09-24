@@ -204,9 +204,7 @@ On this screen all entries with the same name are shown, so the user can see all
 
 There is no interaction on this screen, it just waits for the user to press a key to return to the main list.
 
-__Note__- _the terminal emulator used to host the app on Heroku does not support shift-tab to move focus backwards.  There are three widgets on this form that accept focus, the name filter, the list itself, and the OK button at the bottom that returns the user to the home screen._
 
-_This means that when the main list has focus it cannot return to the name filter field.  This can be fixed by overwriting the python curses code that handles keypresses, but this has not been done yet.  The user can still use the mouse to click on the name filter field to return focus to it._
 
 ## Technologies and Frameworks used
 * VSCode - IDE used for development
@@ -230,15 +228,41 @@ The database is accessed by the app using the psycopg2 library.  The database UR
 
 ## Pending Improvements
 * __move database to Heroku__
-    * I happened to have an AWS EC2 instance running, so I used that to host the database.  I would like to move the database to Heroku.  
-
-* __move database password to environment variable__
-    * The database password is currently stored in the code.  I would like to move it to an environment variable.
+    * I happened to have an AWS EC2 instance running, so I used that to host the database.  I would like to move the database to a Heroku hosted PostgreSQL database.  
 
 * __add ability to edit or delete login records__
     * Currently there is no method of editing or deleting login records.  I would like to add this functionality.  There are multiple entries allowed for each login name, so this does not hurt the functionality of the app, but it would be cleaner to allow editing and deleting of records.
 
 * __add ability to edit or delete user accounts__
     * There is no method of editing or deleting user accounts.  This is a functional issue in the case that a user wants to change their master password, or if they have lost their master password.
+
+
+## Testing
+
+The app was tested manually.  There is intentionally minimal limitations placed on user inputs.  In general all data is recorded as strings, so there are no issues with data types.  
+
+Most of the data that is user inputs is optional.  The only exceptions are the username and password when logging in, and the name of each record when creating a new login record.  
+
+When logging in the following errors are checked for:
+
+* __blank username__ - field must not be empty
+* __blank password__ - field must not be empty
+* __User not found__ - username does not exist in database
+* __Incorrect password__ - password does not match password in database
+
+When creating a new account the following errors are checked for:
+* __blank username__ - field must not be empty
+* __blank password__ - field must not be empty
+* __User already exists__ - username already exists in database
+
+When creating a new login record the following errors are checked for:
+* __blank name__ - name field must not be empty
+
+### Limitations
+The app requires the database to be available.  
+
+__Note__- _the terminal emulator used to host the app on Heroku does not support shift-tab to move focus backwards.  There are three widgets on the view logins form that accept focus, the name filter, the list itself, and the OK button at the bottom that returns the user to the home screen._
+
+_This means that when the main list has focus it cannot return to the name filter field.  This can be fixed by overwriting the python curses code that handles keypresses, but this has not been done yet.  The user can still use the mouse to click on the name filter field to return focus to it._
 
 
