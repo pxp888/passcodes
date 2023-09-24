@@ -9,15 +9,41 @@ Passcodes is a very simple password manager written in Python. Each record consi
 ## Features
 * __Secure login__
     * User accounts are created and associated with passwords that are hashed and salted.  Plaintext passwords are not stored.
+    
+    ![login form detail](assets/images/loginForm.webp)
+
 * __Create Login records__
     * Users can create records for each login they want to store.  Each record consists of a name, username, password, and URL.
+    
+    ![create login form](assets/images/create.webp)
+
 * __Random Password generation__
     * Users can generate a random password of a specified length.  
     * Options exist to include numbers or special symbols in the password.
+
 * __Safe password storage__
     * Passwords are encrypted using the Fernet encryption scheme.  The encryption key is the users main password, which is not stored in the database.  
+
 * __Dynamic Search by name__
     * Users can search for records by name. The search is dynamic, so results are updated as the user types.
+
+    ![view logins form](assets/images/view.webp)
+
+* __Details of each record__
+    * Users can view the details of each record.  The details include the name, username, password, and URL.  The password is decrypted using the users master password.
+
+    ![view details form](assets/images/viewDetail2.webp)
+
+* __Multiple records for each name__
+    * Multiple records can exist for each name.  This allows the user to store a history of records for each name.
+
+* __User Alerts for input errors__
+    * Users are alerted if they enter an invalid inputs.  This includes invalid blank entries, wrong passwords, and duplicate usernames.
+
+    ![alert example](assets/images/alert.webp)
+
+* __PostgreSQL database__
+    * The database is PostgreSQL, which is a relational database. 
 
 
 ## Cryptographic Security
@@ -25,6 +51,14 @@ Passcodes is a very simple password manager written in Python. Each record consi
 The primary user passwords, or master passwords are not stored in the database.  Each password is assigned a salt value, and the password plus the salt value are hashed using the SHA256 algorithm.  
 
 The salt value is stored in the database, and the hashed password is stored in the database.  
+
+~~~mermaid
+    graph LR
+    mp(master password)
+    sp(salt)
+    hp(hashed password)
+    mp & sp -->hp-->db[(database)]
+~~~
 
 When a user attempts to login, the salt value is retrieved from the database, and the password entered by the user is hashed using the same salt value.  
 
@@ -35,6 +69,11 @@ The passwords for each login record are encrypted using the Fernet encryption sc
 
 The master password is not stored in the database, so the login passwords cannot be decrypted without the master password.
 
+~~~mermaid
+    graph LR
+    mp(master password) & lp(login password) --> e[encrypted password] --> db[(database)]
+    name & username & URL --> db
+~~~
 
 
 
@@ -45,6 +84,8 @@ The master password is not stored in the database, so the login passwords cannot
 There are five main forms that the user interacts with.  
 
 ### Overall flowchart
+<hr>
+
 ~~~mermaid
 graph TD
 lg[[login form]]
@@ -54,11 +95,15 @@ vl[[view logins form]]
 vd[[view details]]
 
 lg-->hs<-->cl & vl
-hs-.logout.->lg
+hs-->|logout|lg
 vl<-->vd
 ~~~
 
+<br>
+
 ### Login flowchart
+<hr>
+
 ~~~mermaid
 graph TD
 lg[[login form]]
@@ -81,14 +126,21 @@ pv-.->|no|lg
 uk2-.->|yes|lg
 ~~~
 
+___Note___ - _dashed lines indicate an alert message presented to the user._
+
+<br>
+
 There are two methods of getting from the first login screen to the home screen.  One is to create a new account, and the other is to login to an existing account.  The flowchart shows both methods.
 
 To create a new account, the user enters a username and password, and clicks the create account button.  The username is checked to make sure it is not already in use.  If it is not in use, the password is hashed and salted, and the username and hashed password are stored in the database.  The user is then logged in.
 
 To login to an existing account, the user enters a username and password, and clicks the login button.  The username is checked to make sure it exists in the database.  If it does, the password is hashed and salted, and compared to the hashed password in the database.  If the passwords match, the user is logged in.
 
+<br>
 
 ### create login records flowchart
+<hr>
+
 ~~~mermaid
 graph TD
 
@@ -107,9 +159,12 @@ cl-->ok & op1
 
 ok-->nv
 nv-.->|no|cl
-nv-->|yes|add-.->hs
-op1-->gp-.->cl
+nv-->|yes|add-->hs
+op1-->gp-->cl
 ~~~
+
+___Note___ - _dashed lines indicate an alert message presented to the user._
+<hr>
 
 The form to create new login records has multiple fields.  The name field is used to identify and search for the record.  The username, password, and URL fields are used to store the login information.  
 
@@ -123,6 +178,8 @@ The password field itself is editable, so the user may alter the suggested passw
 
 
 ### view logins flowchart
+
+<hr>
 
 ~~~mermaid
 graph TD
@@ -173,7 +230,7 @@ The database is accessed by the app using the psycopg2 library.  The database UR
 
 ## Pending Improvements
 * __move database to Heroku__
-    * I happened to have an AWS EC2 instance running, so I used that to host the database.  I would like to move the database to Heroku.
+    * I happened to have an AWS EC2 instance running, so I used that to host the database.  I would like to move the database to Heroku.  
 
 * __move database password to environment variable__
     * The database password is currently stored in the code.  I would like to move it to an environment variable.

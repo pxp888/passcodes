@@ -1,14 +1,15 @@
-import os 
+import os
 import time
 import hashlib
-import random 
+import random
 import base64
 import psycopg2
 import curses
 import npyscreen
 from cryptography.fernet import Fernet
 
-# This is a simple password manager that uses a master password to encrypt and decrypt passwords
+# This is a simple password manager that uses a master password to encrypt
+# and decrypt passwords
 # Passwords are stored in a database and encrypted with the master password
 # The master password is hashed and stored in the database
 
@@ -21,12 +22,14 @@ def hash(plaintext):
     # this is a hash function
     return hashlib.sha256(plaintext.encode()).digest()
 
+
 def encrypt(plaintext, key):
     # this is an encryption function
     key = base64.b64encode(hash(key))
     cipher_suite = Fernet(key)
     cipher_text = cipher_suite.encrypt(plaintext.encode())
     return cipher_text.decode()
+
 
 def decrypt(ciphertext, key):
     # this is a decryption function
@@ -38,21 +41,26 @@ def decrypt(ciphertext, key):
 
 # DATABASE FUNCTIONS
 
-# These are defined here to make it easier to change the database later.  
-# These functions are the only ones that interact with the database.  
-# There is one global variable to store the database connection, and make it available to all functions.
+# These are defined here to make it easier to change the database later.
+# These functions are the only ones that interact with the database.
+# There is one global variable to store the database connection, and make
+# it available to all functions.
 
 db_connection = None
 
+
 def getDBConnection():
-    # This is a helper function used by the database calls below to get a database connection.  
-    # This enables the same connection to be used for multiple calls, and re-establishes the connection if it is lost.
+    # This is a helper function used by the database calls below to get
+    # a database connection.
+    # This enables the same connection to be used for multiple calls,
+    # and re-establishes the connection if it is lost.
     # The database connection details are stored in environment variables.
 
     db_pw = os.environ.get('DB_PW')
     db_ip = os.environ.get('DB_IP')
-    if db_ip is None: db_ip = "localhost"
-    
+    if db_ip is None:
+        db_ip = "localhost"
+
     global db_connection
     if db_connection is None or db_connection.closed != 0:
         try:
@@ -72,8 +80,9 @@ def getDBConnection():
             )
     return db_connection
 
+
 def setupStorage():
-    # create database tables if they don't exist.  This should only be called once at the start of the application.  
+    # create database tables if they don't exist.  This should only be called once at the start of the application.
     conn = getDBConnection()
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS passcodes
@@ -90,9 +99,10 @@ def setupStorage():
         PASSWORD TEXT);''')
     conn.commit()
     cur.close()
-    
+
+
 def getUserLoginData(username):
-    # gets login data from the database for a given username.  
+    # gets login data from the database for a given username.
     conn = getDBConnection()
     cur = conn.cursor()
     cur.execute("SELECT USERNAME, SALT, PASSWORD FROM users WHERE USERNAME = %s", (username,))
@@ -102,18 +112,20 @@ def getUserLoginData(username):
     if result is None:
         return None
     else:
-        return result 
+        return result
+
 
 def saveUserLoginData(username, password):
     # saves login data to the database
     salt = str(random.randint(1000000000000000, 9999999999999999))
     passwordHash = str(hash(password + salt))
-    
+
     conn = getDBConnection()
     cur = conn.cursor()
     cur.execute("INSERT INTO users (USERNAME, SALT, PASSWORD) VALUES (%s, %s, %s)", (username, salt, passwordHash))
     conn.commit()
     cur.close()
+
 
 def getUserData(owner, masterPassword):
     # gets records for a user from the database
@@ -127,6 +139,7 @@ def getUserData(owner, masterPassword):
         name, username, password, url = records[i]
         records[i] = (name, username, decrypt(password, masterPassword), url)
     return records
+
 
 def saveUserData(owner, name, username, password, url, masterPassword):
     # saves records for a user to the database
@@ -142,13 +155,13 @@ def saveUserData(owner, name, username, password, url, masterPassword):
 # MAIN APPLICATION
 
 class MyTestApp(npyscreen.NPSAppManaged):
-    # This is the main application instance.  
+    # This is the main application instance.
     def __init__(self):
         super(MyTestApp, self).__init__()
-        # the current user and master password are stored here, to make them available to all forms.  
+        # the current user and master password are stored here, to make them available to all forms.
         self.currentUser = None
         self.masterPassword = None
-        
+
     def onStart(self):
         # create forms and associate them with the app
         self.registerForm("MAIN", LoginForm())
@@ -156,10 +169,11 @@ class MyTestApp(npyscreen.NPSAppManaged):
         self.registerForm("CreateLogin", CreateLoginForm())
         self.registerForm("ViewLogins", viewLoginForm())
 
+
 class LoginForm(npyscreen.Form):
-    # This is the login screen form that handles logging in and creating new accounts.  
+    # This is the login screen form that handles logging in and creating new accounts.
     # There are two buttons, one to login and one to create a new account.
-    # There are also text fields for username and password entry.  
+    # There are also text fields for username and password entry.
 
     def create(self):
         # This creates the form
@@ -167,13 +181,13 @@ class LoginForm(npyscreen.Form):
         self.username = self.add(npyscreen.TitleText, name = "Username:")
         self.password = self.add(npyscreen.TitlePassword, name = "Password:")
         self.add(npyscreen.ButtonPress, name = "Login", when_pressed_function = self.login)
-        self.add(npyscreen.ButtonPress, name = "Create Account", when_pressed_function = self.createAccount)    
+        self.add(npyscreen.ButtonPress, name = "Create Account", when_pressed_function = self.createAccount)
 
     def clear(self):
         # This clears the form
         self.username.value = ""
-        self.password.value = ""    
- 
+        self.password.value = ""
+
     def login(self):
         # This checks if the user exists and if the password is correct
         user = self.username.value
@@ -195,7 +209,7 @@ class LoginForm(npyscreen.Form):
         except:
             npyscreen.notify_confirm("Incorrect Password", title="Alert")
             return
-        
+
     def createAccount(self):
         # this creates new accounts
         user = self.username.value
@@ -220,9 +234,10 @@ class LoginForm(npyscreen.Form):
             npyscreen.notify_confirm("User already exists", title="Alert")
             return
 
+
 class HomeForm(npyscreen.Form):
-    # this is a simple form that acts as the main menu for the application.  
-    # it allows the user to create new logins, view existing logins, or logout and return to the login screen. 
+    # this is a simple form that acts as the main menu for the application.
+    # it allows the user to create new logins, view existing logins, or logout and return to the login screen.
 
     def create(self):
         # create the main menu
@@ -231,7 +246,7 @@ class HomeForm(npyscreen.Form):
         self.add(npyscreen.ButtonPress, name = "View Logins", when_pressed_function = self.searchPasscodes)
         self.add(npyscreen.ButtonPress, name = "Create Login", when_pressed_function = self.createPasscode)
         self.add(npyscreen.ButtonPress, name = "Logout", when_pressed_function = self.logout)
-        # self.add(npyscreen.ButtonPress, name = "Exit", when_pressed_function = self.exit)   # This is commented out for heroku deployment, uncomment to run locally. 
+        # self.add(npyscreen.ButtonPress, name = "Exit", when_pressed_function = self.exit)   # This is commented out for heroku deployment, uncomment to run locally.
 
     def exit(self):
         self.parentApp.switchForm(None)
@@ -253,8 +268,9 @@ class HomeForm(npyscreen.Form):
         self.parentApp.getForm("MAIN").clear()
         self.parentApp.switchForm("MAIN")
 
+
 class CreateLoginForm(npyscreen.ActionForm):
-    # This form allows the user to create a new login record.  
+    # This form allows the user to create a new login record.
 
     def create(self):
         # create form widgets
@@ -277,7 +293,7 @@ class CreateLoginForm(npyscreen.ActionForm):
         self.passOptions.value_changed_callback = self.generate
 
         self.generate()
-        
+
     def clear(self):
         # clear the form
         self.name.value = ""
@@ -287,9 +303,9 @@ class CreateLoginForm(npyscreen.ActionForm):
         self.passLength.value = 12
         self.passOptions.value = [0,1]
         self.generate()
-    
+
     def generate(self, widget=None):
-        # generate a random password 
+        # generate a random password
         random.seed(time.time())
         code = ''
         while len(code) < self.passLength.value:
@@ -321,9 +337,10 @@ class CreateLoginForm(npyscreen.ActionForm):
         self.clear()
         self.parentApp.switchForm("Home")
 
+
 class viewLoginForm(npyscreen.ActionFormMinimal):
     # This form allows the user to view their logins.
-    # By default all logins are shown, but the user can filter the results by name. 
+    # By default all logins are shown, but the user can filter the results by name.
 
     def create(self):
         # create the form widgets
@@ -339,7 +356,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         try:
             selected_row = self.grid.selected_row()
         except:
-            return 
+            return
 
         curses.def_prog_mode()
         curses.endwin()
@@ -348,7 +365,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         print("\n {: >12} {: >12} {: >30} {: >20} \n".format(*["Name", "Username", "Password", "URL"]))
         print("\u2500" * 80)
         for record in self.records:
-            if record[0]==selected_row[0]:        
+            if record[0]==selected_row[0]:
                 print("{: >12} {: >12} {: >30} {: >20}".format(*record))
 
         input('\n\nPress enter to continue...')
@@ -362,9 +379,9 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 
     def fill(self, widget=None):
         # fill the grid with the login details, filtered by name
-        if self.records == []: 
+        if self.records == []:
             self.grid.values = []
-            return 
+            return
         shownRecords = {}
         for record in self.records:
             shownRecords[record[0]] = [record[0], record[1], record[3]]
@@ -375,20 +392,18 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
             if filter.lower() in record[0].lower():
                 self.grid.values.append(record)
         self.grid.display()
-    
+
     def on_ok(self):
         # return to home form
         self.nameFilterLine.value = ""
         self.parentApp.switchForm("Home")
-    
-
 
 
 if __name__ == '__main__':
-    # setup the database 
+    # setup the database
     setupStorage()
 
-    #run the app     
+    # run the app
     TA = MyTestApp()
     TA.run()
-
+    
