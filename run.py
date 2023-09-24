@@ -327,7 +327,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 
     def create(self):
         # create the form widgets
-        self.nameFilterLine = self.add(npyscreen.TitleText, name = "Name has:", editable = True)
+        self.nameFilterLine = self.add(npyscreen.TitleText, name = "Name filter:", editable = True)
         self.add(npyscreen.FixedText, value="\u2500" * 40, editable=False)
         self.nameFilterLine.value_changed_callback = self.fill
         self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "URL"], selectable = True, select_whole_line = True)
