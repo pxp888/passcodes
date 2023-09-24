@@ -45,6 +45,10 @@ def decrypt(ciphertext, key):
 db_connection = None
 
 def getDBConnection():
+    # This is a helper function used by the database calls below to get a database connection.  
+    # This enables the same connection to be used for multiple calls, and re-establishes the connection if it is lost.
+    # The database connection details are stored in environment variables.
+
     db_pw = os.environ.get('DB_PW')
     db_ip = os.environ.get('DB_IP')
     if db_ip is None: db_ip = "localhost"
@@ -69,7 +73,7 @@ def getDBConnection():
     return db_connection
 
 def setupStorage():
-    # create database tables if they don't exist
+    # create database tables if they don't exist.  This should only be called once at the start of the application.  
     conn = getDBConnection()
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS passcodes
@@ -88,7 +92,7 @@ def setupStorage():
     cur.close()
     
 def getUserLoginData(username):
-    # gets login data from the database
+    # gets login data from the database for a given username.  
     conn = getDBConnection()
     cur = conn.cursor()
     cur.execute("SELECT USERNAME, SALT, PASSWORD FROM users WHERE USERNAME = %s", (username,))
@@ -113,7 +117,6 @@ def saveUserLoginData(username, password):
 
 def getUserData(owner, masterPassword):
     # gets records for a user from the database
-
     conn = getDBConnection()
     cur = conn.cursor()
     cur.execute("SELECT NAME, USERNAME, PASSWORD, URL FROM passcodes WHERE OWNER = %s", (owner,))
