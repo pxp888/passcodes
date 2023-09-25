@@ -17,6 +17,7 @@ class HomeForm(npyscreen.Form):
         # self.add(npyscreen.ButtonPress, name = "Exit", when_pressed_function = self.exit)   # This is commented out for heroku deployment, uncomment to run locally.
 
     def exit(self):
+        # exit the application
         self.parentApp.switchForm(None)
 
     def createPasscode(self):

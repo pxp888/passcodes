@@ -56,7 +56,7 @@ The salt value is stored in the database, and the hashed password is stored in t
     graph LR
     mp(master password)
     sp(salt)
-    hp(hashed password)
+    hp[/hashed password/]
     mp & sp -->hp-->db[(database)]
 ~~~
 
@@ -71,8 +71,8 @@ The master password is not stored in the database, so the login passwords cannot
 
 ~~~mermaid
     graph LR
-    mp(master password) & lp(login password) --> e[encrypted password] --> db[(database)]
-    name & username & URL --> db
+    mp(master password) & lp(login password) --> e[/encrypted password/] --> db[(database)]
+    n1(name) & n2(username) & url(URL) --> db
 ~~~
 
 
@@ -188,10 +188,10 @@ vl[[view logins form]]
 
 nf(names filtered)
 hs<-->vl
-vl-->nf-->ul1(update list)-.->vl
+vl-->nf-->ul1(update list)-->vl
 
 vl<-->ns(name selected)-->sd[[view details]]
-sd-->wt(wait for input)-.->vl
+sd-->wt(wait for input)-->vl
 ~~~
 
 The form for viewing records has just two elements.  The first is a name filter field.  As the user types in the name filter field, the list of records is filtered to only show records that contain the text in the name filter field.
