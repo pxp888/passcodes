@@ -9,6 +9,7 @@ from cryptography.fernet import Fernet
 # CRYPTOGRAPHY FUNCTIONS
 # These are defined here to make it easier to change the encryption methods later
 
+
 def hash(plaintext):
     # this is a hash function
     return hashlib.sha256(plaintext.encode()).digest()
@@ -36,6 +37,7 @@ def decrypt(ciphertext, key):
 # The database connection details are stored in environment variables, DB_PW and DB_IP for the password and IP address respectively.
 
 db_connection = None
+
 
 def getDBConnection():
     # This is a helper function used by the database calls below to get
@@ -139,5 +141,5 @@ def saveUserData(owner, name, username, password, url, masterPassword):
     conn.commit()
     cur.close()
 
-setupStorage()
 
+setupStorage()

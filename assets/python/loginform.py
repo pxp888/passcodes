@@ -1,20 +1,18 @@
 import npyscreen
-
 from helpers import *
 
-
 class LoginForm(npyscreen.Form):
-    # This is the login screen form that handles logging in and creating new accounts.
-    # There are two buttons, one to login and one to create a new account.
-    # There are also text fields for username and password entry.
+    """ This is the login screen form that handles logging in and creating new accounts.
+    There are two buttons, one to login and one to create a new account.
+    There are also text fields for username and password entry."""
 
     def create(self):
         # This creates the form widgets
-        self.heading = self.add(npyscreen.TitleText, name = "Welcome to Passcodes", editable = False)
-        self.username = self.add(npyscreen.TitleText, name = "Username:")
-        self.password = self.add(npyscreen.TitlePassword, name = "Password:")
-        self.add(npyscreen.ButtonPress, name = "Login", when_pressed_function = self.login)
-        self.add(npyscreen.ButtonPress, name = "Create Account", when_pressed_function = self.createAccount)
+        self.heading = self.add(npyscreen.TitleText, name="Welcome to Passcodes", editable=False)
+        self.username = self.add(npyscreen.TitleText, name="Username:")
+        self.password = self.add(npyscreen.TitlePassword, name="Password:")
+        self.add(npyscreen.ButtonPress, name="Login", when_pressed_function=self.login)
+        self.add(npyscreen.ButtonPress, name="Create Account", when_pressed_function=self.createAccount)
 
     def clear(self):
         # This clears the username and password fields
@@ -70,4 +68,3 @@ class LoginForm(npyscreen.Form):
         else:
             npyscreen.notify_confirm("User already exists", title="Alert")
             return
-

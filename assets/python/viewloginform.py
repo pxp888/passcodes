@@ -1,8 +1,7 @@
 import os
 import curses
 import npyscreen
-
-from helpers import * 
+from helpers import *
 
 
 class viewLoginForm(npyscreen.ActionFormMinimal):
@@ -11,10 +10,10 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
 
     def create(self):
         # create the form widgets
-        self.nameFilterLine = self.add(npyscreen.TitleText, name = "Name filter:", editable = True)
+        self.nameFilterLine = self.add(npyscreen.TitleText, name="Name filter:", editable=True)
         self.nameFilterLine.value_changed_callback = self.fill
         self.add(npyscreen.FixedText, value="\u2500" * 40, editable=False)
-        self.grid = self.add(npyscreen.GridColTitles, col_titles = ["Name", "Username", "URL"], selectable = True, select_whole_line = True)
+        self.grid = self.add(npyscreen.GridColTitles, col_titles=["Name", "Username", "URL"], selectable=True, select_whole_line=True)
         self.grid.add_handlers({curses.ascii.NL: self.itemPicked})
         self.records = []
 
@@ -22,7 +21,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         # display the selected login details
         try:
             selected_row = self.grid.selected_row()
-        except:
+        except curses.error:
             return
 
         curses.def_prog_mode()
@@ -32,7 +31,7 @@ class viewLoginForm(npyscreen.ActionFormMinimal):
         print("\n {: >12} {: >12} {: >30} {: >20} \n".format(*["Name", "Username", "Password", "URL"]))
         print("\u2500" * 80)
         for record in self.records:
-            if record[0]==selected_row[0]:
+            if record[0] == selected_row[0]:
                 print("{: >12} {: >12} {: >30} {: >20}".format(*record))
 
         input('\n\nPress enter to continue...')
