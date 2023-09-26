@@ -53,11 +53,20 @@ The primary user passwords, or master passwords are not stored in the database. 
 The salt value is stored in the database, and the hashed password is stored in the database.  
 
 ~~~mermaid
-    graph LR
+    graph TD
     mp(master password)
     sp(salt)
+    db[(database)]
     hp[/hashed password/]
-    mp & sp -->hp-->db[(database)]
+
+    subgraph User Record
+        hp
+        sp
+        un(username)
+    end
+
+    mp & sp --> hp
+    hp & un & sp --> db
 ~~~
 
 When a user attempts to login, the salt value is retrieved from the database, and the password entered by the user is hashed using the same salt value.  
@@ -71,8 +80,13 @@ The master password is not stored in the database, so the login passwords cannot
 
 ~~~mermaid
     graph LR
-    mp(master password) & lp(login password) --> e[/encrypted password/] --> db[(database)]
-    n1(name) & n2(username) & url(URL) --> db
+    mp(master password) & lp(login password) --> e[/encrypted password/]
+    db[(Database)]
+    subgraph login record
+        e
+        n1(name) & n2(username) & url(URL)
+    end
+    e & n1 & n2 & url --> db
 ~~~
 
 
@@ -81,129 +95,69 @@ The master password is not stored in the database, so the login passwords cannot
 
 ## Interface Flowchart
 
-There are five main forms that the user interacts with.  
+### Login to the app
 
-### Overall flowchart
-<hr>
+There are two ways to get to the home screen.  The first is to create a new account.  The second is to login to an existing account.  
 
-~~~mermaid
-graph TD
-lg[[login form]]
-hs[[home screen]]
-cl[[create login form]]
-vl[[view logins form]]
-vd[[view details]]
+There are logical requirements for each.  To create a new account the username __must not__ already exist in the database.  
 
-lg-->hs<-->cl & vl
-hs-->|logout|lg
-vl<-->vd
-~~~
+To login to an existing account the username __must__ exist in the database, and the password __must match__ the hashed password in the database.
 
-<br>
+Also, neither the username or password field can be blank. 
 
-### Login flowchart
-<hr>
+If any of the conditions here are not met, a corresponding alert is presented to the user.
+
+___The graph below shows the general flowchart for user interaction.___
 
 ~~~mermaid
-graph TD
-lg[[login form]]
-de(username and password entry)
-ls(Login)
-cs(Create account )
-uk1{{username known}}
-uk2{{username known}}
-pw1{{password hash correct}}
-hs[[home screen]]
-ad[(add user to database)]
-pv{{password valid}}
+flowchart TD
 
-lg-->de & ls & cs
-ls-->uk1-->|yes|pw1-->|yes|hs
-pw1-.->|no|lg
-uk1-.->|no|lg
-cs-->uk2-->|no|pv-->|yes|ad-->hs
-pv-.->|no|lg 
-uk2-.->|yes|lg
+classDef formview fill:#f96
+
+class hs formview;
+
+cr2-->hs
+pw1-.->|yes|hs
+hs[[Home Screen]]-->Create_Entry
+hs-->View_Entries
+
+subgraph "Login_Screen"
+    lf[[Login Form]]-->de(username and password entry)-->lp(Login) & cr1(Create Account)
+    lp-->uk1(username is known)-.->|Yes|pw1(password hash matches)
+    cr1-->uk2(username is known)-.->|No|cr2[(Add Account to Database)]
+    
+end
+
+subgraph Create_Entry
+    crf[[Create Entry Form]]-->de2(Entry Details)-->nv(name is valid)
+    nv-.->|Yes|cr3[(Add Entry to Database)]
+end
+
+
+subgraph View_Entries
+    vef[[View Entries Form]]
+    vef-->ns(name selected)
+    vef-->nf(names filtered)-->ul(update list)
+    ns-->ed[[entry details view]]
+    
+end
 ~~~
+___Note___: Dashed lines represent logical requirements.  Failures to meet these requirements will result in an alert presented to the user.  
 
-___Note___ - _dashed lines indicate an alert message presented to the user._
+### Creating Entries
+To create a new entry the user fills in the name of the record, along with a username, password and URL field.  The name field is required, but the other fields are optional.
 
-<br>
+The password is randomly generated, but the user can edit it if they want.  In addition, there is a button to regenerate the password, as well as controls to set the password length, and to include numbers and special characters in the password.
 
-There are two methods of getting from the first login screen to the home screen.  One is to create a new account, and the other is to login to an existing account.  The flowchart shows both methods.
+The only requirement for entries is that the name field must not be blank.  If the name field is blank, an alert is presented to the user.
 
-To create a new account, the user enters a username and password, and clicks the create account button.  The username is checked to make sure it is not already in use.  If it is not in use, the password is hashed and salted, and the username and hashed password are stored in the database.  The user is then logged in.
+Multiple records with the same name are allowed, and they will not overwrite each other.  This allows the user to store a history of records for each name.
 
-To login to an existing account, the user enters a username and password, and clicks the login button.  The username is checked to make sure it exists in the database.  If it does, the password is hashed and salted, and compared to the hashed password in the database.  If the passwords match, the user is logged in.
+### Viewing Entries
 
-<br>
+The view entries form shows a list of records.  This list can be filtered dynamically by the user by typing in the name filter field.  The list is updated as the user types.
 
-### create login records flowchart
-<hr>
-
-~~~mermaid
-graph TD
-
-hs[[home screen]]
-cl[[create login form]]
-gp(generate random password)
-
-ok(OK selected)
-nv{{name is valid}}
-add[(add login to database)]
-
-op1(password options changed)
-
-hs<-->cl
-cl-->ok & op1 
-
-ok-->nv
-nv-.->|no|cl
-nv-->|yes|add-->hs
-op1-->gp-->cl
-~~~
-
-___Note___ - _dashed lines indicate an alert message presented to the user._
-<hr>
-
-The form to create new login records has multiple fields.  The name field is used to identify and search for the record.  The username, password, and URL fields are used to store the login information.  
-
-The only required field is the name field.  Blank entries are allowed for all others, but the name field must be valid for the record to be saved.  
-
-Multiple records can exist with the same name. 
-
-The suggested password for each record is automatically generated.  If the user does not like the suggested password, they can click the generate password button to generate a new password.  The user can also change the length of the password, and choose to include numbers or special symbols in the password.
-
-The password field itself is editable, so the user may alter the suggested password if they wish.
-
-
-### view logins flowchart
-
-<hr>
-
-~~~mermaid
-graph TD
-hs[[home screen]]
-vl[[view logins form]]
-
-nf(names filtered)
-hs<-->vl
-vl-->nf-->ul1(update list)-->vl
-
-vl<-->ns(name selected)-->sd[[view details]]
-sd-->wt(wait for input)-->vl
-~~~
-
-The form for viewing records has just two elements.  The first is a name filter field.  As the user types in the name filter field, the list of records is filtered to only show records that contain the text in the name filter field.
-
-This main list shows only one entry for each name.  If multiple records with the same name exist, only the last one entered is shown.  
-
-The user can then select which record he wants to see from the main list.  The record details are then displayed in a separate screen, along with the passwords.  The user can then copy the username or password to the clipboard. 
-
-On this screen all entries with the same name are shown, so the user can see all the records with the same name. This means a user can see a history of records for entries with the same name.  
-
-There is no interaction on this screen, it just waits for the user to press a key to return to the main list.
-
+The user can select a record by clicking on it, or by using the up and down arrow keys.  The details of the selected record are shown in the details view.
 
 
 ## Technologies and Frameworks used
@@ -261,8 +215,11 @@ When creating a new login record the following errors are checked for:
 ### Limitations
 The app requires the database to be available.  
 
-__Note__- _the terminal emulator used to host the app on Heroku does not support shift-tab to move focus backwards.  There are three widgets on the view logins form that accept focus, the name filter, the list itself, and the OK button at the bottom that returns the user to the home screen._
+## Known Issues
+_The terminal emulator used to host the app on Heroku does not support shift-tab to move focus backwards.  There are three widgets on the view logins form that accept focus, the name filter, the grid that holds the list itself, and the OK button at the bottom that returns the user to the home screen._
 
-_This means that when the main list has focus it cannot return to the name filter field.  This can be fixed by overwriting the python curses code that handles keypresses, but this has not been done yet.  The user can still use the mouse to click on the name filter field to return focus to it._
+_This causes a problem when the main list has focus. Focus cannot return to the name filter field above because the grid widget that holds the list of entries captures up and down keypresses.  The only way to move focus out of this widget is to tab out, or use the mouse.  Since shift-tab is not supported by the emulator you cannot return to a widget above the grid._
+
+_This can be fixed by overwriting the python curses code that handles keypresses, but this has not been done yet.  The user can still use the mouse to click on the name filter field to return focus to it._
 
 
