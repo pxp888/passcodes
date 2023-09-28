@@ -157,11 +157,16 @@ class filterList(textline):
         for i in self.names:
             self.screen.addstr(self.y + self.names.index(i), self.x, i)
             row +=1
-            if row == self.maxlen:
-                break
+            if row > self.maxlen:
+                break 
         if self.focus==2:
             if self.selected >= 0 and self.selected < len(self.names):
-                self.screen.addstr(self.y + self.selected, self.x, self.names[self.selected], curses.A_REVERSE)
+                row = self.y + self.selected
+                if row > self.maxlen:
+                    return
+                self.screen.addstr(row, self.x, self.names[self.selected], curses.A_REVERSE)
+                
+    
 
     def clear(self):
         for i in self.names:
@@ -178,7 +183,6 @@ class filterList(textline):
                 # self.screen.addstr(self.y + row, self.x, i)
                 self.names.append(i)
                 row += 1
-        
         self.draw()
 
 
