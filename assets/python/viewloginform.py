@@ -16,7 +16,7 @@ class viewLoginForm(form):
         self.nameFilterLine.pressCallback = self.grid.filter
         
         height, width = self.screen.getmaxyx()
-        self.grid.maxlen = height - 10
+        # self.grid.maxlen = height - 10
         self.grid.callback = self.itemPicked
 
         self.add(textline('View Logins'))

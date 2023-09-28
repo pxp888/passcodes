@@ -112,6 +112,7 @@ class button(textline):
 
 
 class checkbox(textline):
+    """This is a basic checkbox, toggled with either space or enter."""
     def __init__(self, label='', value=True):
         super().__init__(label)
         self.focus = 1
@@ -146,27 +147,21 @@ class filterList(textline):
         self.items = []
         self.focus = 1
         self.selected = -1
-        self.maxlen = 10
+        self.maxlen = 8
 
     def setItems(self, names):
-        self.names = names
+        self.names = names[:self.maxlen]
         self.items = names
 
     def draw(self):
-        row = 0
         for i in self.names:
             self.screen.addstr(self.y + self.names.index(i), self.x, i)
-            row +=1
-            if row > self.maxlen:
-                break 
         if self.focus==2:
             if self.selected >= 0 and self.selected < len(self.names):
                 row = self.y + self.selected
-                if row > self.maxlen:
-                    return
                 self.screen.addstr(row, self.x, self.names[self.selected], curses.A_REVERSE)
-                
-    
+            else:
+                self.selected=-1           
 
     def clear(self):
         for i in self.names:
@@ -183,8 +178,9 @@ class filterList(textline):
                 # self.screen.addstr(self.y + row, self.x, i)
                 self.names.append(i)
                 row += 1
+                if row > self.maxlen:
+                    break
         self.draw()
-
 
     def keypress(self, key):
         if key=='KEY_DOWN':
