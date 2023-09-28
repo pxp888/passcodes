@@ -20,7 +20,7 @@ class textline():
         self.focus = 0
 
     def draw(self):
-        self.screen.addstr(self.y, self.x, self.label)
+        self.screen.addstr(self.y, self.x, self.label, curses.color_pair(2)) 
 
     def clear(self):
         self.draw()
@@ -102,7 +102,7 @@ class button(textline):
         if self.focus==2:
             self.screen.addstr(self.y, self.x, self.label, curses.A_REVERSE)
         else:
-            self.screen.addstr(self.y, self.x, self.label)
+            self.screen.addstr(self.y, self.x, self.label, curses.color_pair(1))
 
     def keypress(self, key):
         super().keypress(key)
@@ -291,6 +291,8 @@ class form():
             return
         if key=='\t':
             self.focusNext()
+        elif key=='KEY_BTAB':
+            self.focusPrev()
         # elif key=='KEY_DOWN':
         #     self.focusNext()
         # elif key=='KEY_UP':
@@ -316,6 +318,10 @@ class form():
         """This clears all widgets."""
         for i in self.stuff:
             i.clear()
+        for i in self.active:
+            i.focus=1
+        self.focus = self.active[0]
+        self.focus.focus=2
         self.draw()
 
 
@@ -327,6 +333,9 @@ class simpleTuiApp():
 
         self.masterPassword = None
         self.currentUser = None
+
+        curses.init_pair(1, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
     
     def addform(self, name, nform):
         self.forms[name] = nform

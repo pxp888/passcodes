@@ -1,6 +1,6 @@
 import sys
 from curses import wrapper
-import curses
+# import curses
 
 sys.path.append("assets/python")
 from assets.python.tui import *
@@ -8,7 +8,7 @@ from assets.python.loginform import *
 from assets.python.homeform import *
 from assets.python.createloginform import *
 from assets.python.viewloginform import *
-
+from assets.python.accountform import *
 
 # This is a simple password manager that uses a master password to encrypt
 # and decrypt passwords
@@ -25,12 +25,14 @@ def main(stdscr):
     homeform = homeForm(stdscr)
     createform = createLoginForm(stdscr)
     viewform = viewLoginForm(stdscr)
+    accountform = accountForm(stdscr)
 
     app = simpleTuiApp(stdscr)
     app.addform("MAIN", logform)
     app.addform("Home", homeform)
     app.addform("CreateLogin", createform)
     app.addform("ViewLogins", viewform)
+    app.addform("Account", accountform)
 
     app.switchForm("MAIN")
     app.run()

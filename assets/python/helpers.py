@@ -95,7 +95,7 @@ def getUserLoginData(username):
     # gets login data from the database for a given username.
     conn = getDBConnection()
     cur = conn.cursor()
-    cur.execute("SELECT USERNAME, SALT, PASSWORD FROM users WHERE USERNAME = %s", (username,))
+    cur.execute("SELECT USERNAME, SALT, PASSWORD FROM users WHERE USERNAME = %s ORDER BY ID DESC", (username,))
     result = cur.fetchone()
     cur.close()
 

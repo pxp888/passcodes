@@ -45,6 +45,7 @@ class loginForm(form):
         if passwordHash == str(hash(password+salt)):
             self.parentApp.currentUser = user
             self.parentApp.masterPassword = password
+            self.parentApp.getForm("Home").clear()
             self.parentApp.switchForm("Home")
             return
         else:

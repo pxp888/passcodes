@@ -23,11 +23,9 @@ class createLoginForm(form):
         self.cancelButton.callback = self.cancel
         self.generateButton.callback = self.generate
         self.okButton.callback = self.on_ok
-        
         self.numbers.callback = self.generate
         self.symbols.callback = self.generate
-        
-        
+
         self.add(textline('Create Login'))
         height, width = self.screen.getmaxyx()
         self.add(textline('\u2500'*(width-4)))
@@ -47,10 +45,17 @@ class createLoginForm(form):
         self.passLength.value = '12'
         self.generate()
 
+
+    def clear(self):
+        super().clear()
+        self.generate()
+
+
     def cancel(self, thing=None):
         # cancel the creation of the login and return to home
         self.clear()
         self.parentApp.switchForm('Home')
+
 
     def generate(self, thing=None):
         # generate a random password
@@ -61,26 +66,30 @@ class createLoginForm(form):
         except:
             self.alert("Password length must be a number")
             self.passLength.value = ''
-        
+
         if int(self.passLength.value) > 40:
             self.passLength.value = '30'
         if int(self.passLength.value) < 4:
             self.passLength.value = '4'
-    
+
         random.seed(time.time())
         code = ''
         while len(code) < int(self.passLength.value):
             n = random.randint(33, 122)
             if self.numbers.value == False and n >= 48 and n <= 57: continue
             if self.symbols.value == False:
-                if n >= 33 and n <= 47: continue
-                if n >= 58 and n <= 64: continue
-                if n >= 91 and n <= 96: continue
-                if n >= 123 and n <= 126: continue
-
+                if n >= 33 and n <= 47:
+                    continue
+                if n >= 58 and n <= 64:
+                    continue
+                if n >= 91 and n <= 96:
+                    continue
+                if n >= 123 and n <= 126:
+                    continue
             code += chr(n)
         self.password.value = code
         self.password.draw()
+
 
     def on_ok(self, thing=None):
         # save the login to the database
@@ -95,7 +104,7 @@ class createLoginForm(form):
         except:
             self.alert("Password length must be a number")
             return
-        
+
         currentuser = self.parentApp.currentUser
         masterPassword = self.parentApp.masterPassword
         saveUserData(currentuser, self.name.value, self.username.value, self.password.value, self.url.value, masterPassword)
