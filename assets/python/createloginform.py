@@ -42,7 +42,7 @@ class createLoginForm(form):
         self.add(self.okButton)
         self.add(self.cancelButton)
 
-        self.passLength.value = '12'
+        self.passLength.value = '16'
         self.generate()
 
 
@@ -60,17 +60,20 @@ class createLoginForm(form):
     def generate(self, thing=None):
         # generate a random password
         if self.passLength.value == '':
-            self.passLength.value = '12'
+            self.passLength.value = '16'
         try:
             n = int(self.passLength.value)
         except:
             self.alert("Password length must be a number")
             self.passLength.value = ''
+            return
 
         if int(self.passLength.value) > 40:
-            self.passLength.value = '30'
-        if int(self.passLength.value) < 4:
-            self.passLength.value = '4'
+            self.alert("Password length cannot exceed 40")
+            self.passLength.value = '40'
+        if int(self.passLength.value) < 6:
+            self.alert("Password length must be at least 6")
+            self.passLength.value = '6'
 
         random.seed(time.time())
         code = ''
@@ -99,11 +102,10 @@ class createLoginForm(form):
         if self.passLength.value == "":
             self.alert("Password length is required")
             return
-        try:
-            n = int(self.passLength.value)
-        except:
-            self.alert("Password length must be a number")
+        if len(self.password.value) < 6:
+            self.alert("Password must be at least 6 characters")
             return
+        
 
         currentuser = self.parentApp.currentUser
         masterPassword = self.parentApp.masterPassword

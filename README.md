@@ -120,6 +120,7 @@ cr2-->hs
 pw1-.->|yes|hs
 hs[[Home Screen]]-->Create_Entry
 hs-->View_Entries
+hs-->Account_Details
 
 subgraph "Login_Screen"
     lf[[Login Form]]-->de(username and password entry)-->lp(Login) & cr1(Create Account)
@@ -139,9 +140,16 @@ subgraph View_Entries
     vef-->ns(name selected)
     vef-->nf(names filtered)-->ul(update list)
     ns-->ed[[entry details view]]
-    
+end
+
+subgraph Account_Details
+    chpw[[Account Details Form]]
+    chpw-->de3(Change Password) & de4(Delete Account)
+    de3-->cpw1(Password is correct)-.->|Yes|cpw2[(Change Password)]
+    de4-->cpw4(Password is correct)-.->|Yes|cpw3[(Delete Account)]
 end
 ~~~
+
 ___Note___: Dashed lines represent logical requirements.  Failures to meet these requirements will result in an alert presented to the user.  
 
 ### Creating Entries
@@ -159,11 +167,98 @@ The view entries form shows a list of records.  This list can be filtered dynami
 
 The user can select a record by clicking on it, or by using the up and down arrow keys.  The details of the selected record are shown in the details view.
 
+## Interface classes
+
+The interface is written in python using the curses library.  The curses library has limited support for user input on its own, so I created my own classes to handle the interface elements. 
+
+This makes it easy to create new forms, and to re-use the same widgets in different forms.  The interface classes are in the __tui.py__ file.  
+
+The __tui.py__ file contains the following classes:
+
+### Widgets
+The widgets are the basic building blocks of the interface.  Each widget has a position, a size, and a label.  The widgets are drawn on the screen using the curses library. They can also be associated with callback functions to respond to user inputs. 
+
+* __textline__ This is the base class for all widgets.  It simply displays a line of text.  
+
+* __lineEdit__ This is a text input field.  It has a label and a text entry field.  
+
+* __button__ This is simply a labeled button.  
+
+* __checkbox__ This is a checkbox with a label.
+
+* __filterlist__ This is a list of items that can be filtered by typing in a filter field.  The list is updated dynamically as the user types.  The list can be navigated using the up and down arrow keys for selecting the final entry.  
+
+### form 
+This class is responsible for managing a group of widgets.  It handles drawing the widgets on the screen, and responding to user inputs.  It also handles the logic of the form, such as checking for valid inputs, and displaying alerts to the user.
+
+This class is subclassed for each form in the app.  Each form has its own widgets, and its own logic.
+
+### simpleTuiApp
+This class is responsible for managing the forms.  It also holds any variables that must be available to all forms.  This also creates the event loop and captures keyboard inputs.  
+
+Forms are created and then added to the simpleTuiApp object.  Then the simpleTuiApp object is run, which starts the event loop.  The event loop captures keyboard inputs and passes them to the current form.  The form then handles the input and updates the screen as needed.
+
+
+~~~mermaid 
+graph LR
+    stui[simpleTuiApp]
+    stui-->f1[form 1]
+    stui-->f2[form 2]
+    stui-->f3[form 3]
+    f1-->w1[Widget 1]
+    f1-->w2[Widget 2]
+    f2-->w3[Widgets ...]
+    f3-->w4[more widgets ...]
+~~~
+
+
+## Application Structure
+There are five forms used in this application.  Each form is a subclass of the form class in the __tui.py__ file.  Each form has its own widgets, and its own logic.
+
+* __loginForm__ - Handles logging in users and creating new accounts.
+* __homeForm__ - The home menu.  Provides buttons to navigate to the other forms, or logout.  
+* __createLoginForm__ - Handles creating new login records.
+* __viewLoginForm__ - Handles viewing login records.
+* __accountForm__ - Handles changing the master password and deleting user accounts.
+
+
+## Database Structure
+The database is PostgreSQL, which is a relational database.  The database has two tables, one for users, and one for login records.  Database requirements for this application are relatively simple, so the database structure is also simple.
+
+|passcodes|users
+|-|-|
+|ID primary key|ID primary key|
+|Owner|Username|
+|Name|Salt|
+|Username|Password|
+|Password|
+|URL|
+
+### Database functions
+There are only five calls to the database in this application.  The database functions are defined in the __helpers.py__ file.  If the storage backend needs changing in the future, only these functions need to be changed.
+
+The database functions are:
+
+__setupStorage()__ - Creates the database tables if they do not exist.
+
+__getUserLoginData()__ - Retrieves the salt and hashed password for a given username.
+
+__saveUserLoginData()__ - Saves the salt and hashed password for a given username.
+
+__getUserData()__ - Retrieves the login records for a given username.
+
+__saveUserData()__ - Saves the login records for a given username.
+
+__removeUserData()__ - Removes all login records for a given username, and removes the user from the users table.
+
+The connection to the database is stored in a global variable to enable re-using the same connection instead of creating a new connection for each call.  This is done to improve performance.
+
+
+
 
 ## Technologies and Frameworks used
 * VSCode - IDE used for development
 * Python
-    * npyscreen - for creating the terminal user interface (TUI)
     * cryptography - for encrypting and decrypting passwords
     * psycopg2 - for connecting to the database
 
@@ -173,12 +268,15 @@ The user can select a record by clicking on it, or by using the up and down arro
 * Docker - containerization of PostgreSQL database
 * AWS EC2 - for hosting the database container
 
-## Deployment
+## Deployment and Local Development
 The app itself is deployed on Heroku, using a github template from Code Institute to provide the terminal emulator.
 
 The database is PostgreSQL running in a Docker container on an AWS EC2 instance with an ubuntu host instance.
 
-The database is accessed by the app using the psycopg2 library.  The database URL is stored in an environment variable on Heroku.
+The database is accessed by the app using the psycopg2 library.  The database URL and password are stored in an environment variables on Heroku.
+
+
+
 
 ## Pending Improvements
 * __move database to Heroku__
@@ -208,9 +306,22 @@ When creating a new account the following errors are checked for:
 * __blank username__ - field must not be empty
 * __blank password__ - field must not be empty
 * __User already exists__ - username already exists in database
+* __password length__ - password must be at least 6 characters
 
 When creating a new login record the following errors are checked for:
 * __blank name__ - name field must not be empty
+* __password length__ - password must be within length limits
+* __password length field__ - must be a number
+
+When changing the master password the following errors are checked for:
+* __current password__ must be correct
+* __new password__ must be within length limits
+* __confirm password__ must match new password
+
+When deleting an account the following errors are checked for:
+* __current password__ must be correct
+* __confirm password__ must match current password
+
 
 ### Limitations
 The app requires the database to be available.  

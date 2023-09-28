@@ -15,26 +15,36 @@ class accountForm(form):
         self.passline2 = lineEdit('Confirm Password: ')
         self.passButton = button('( Set New Password )')
 
+        self.passline3 = lineEdit('Current Password: ')
+        self.passline4 = lineEdit('Confirm Password: ')
+        self.killButton = button('( Delete Account )')
+
         self.backButton.callback = self.cancel
         self.passButton.callback = self.setNewPassword
+        self.killButton.callback = self.removeUser
 
         self.add(textline('Account Details'))
         height, width = self.screen.getmaxyx()
         self.add(textline('\u2500'*(width-4)))
         self.add(self.backButton)
-        self.add(textline("\n\n"))
+        self.add(textline("\n"))
 
         self.add(self.unameline)
-        self.add(textline("\n\n"))
+        self.add(textline("\n"))
 
-        self.add(textline("To change master password, fill in the fields below'"))
+        self.add(textline("To change master password, fill in the fields below"))
+        self.add(textline("then press the 'Set New Password' button.  This cannot be undone."))
         self.add(self.passline0)
         self.add(self.passline1)
         self.add(self.passline2)
         self.add(self.passButton)
 
-        
-
+        self.add(textline("\n"))
+        self.add(textline("To delete account and all data, fill in the fields below"))
+        self.add(textline("then press the 'Delete Account' button.  This cannot be undone."))
+        self.add(self.passline3)
+        self.add(self.passline4)
+        self.add(self.killButton)
 
     def clear(self):
         self.unameline.label = 'Username: ' + self.parentApp.currentUser
@@ -50,9 +60,6 @@ class accountForm(form):
         
         # check that the current password is correct
         known = getUserLoginData(self.parentApp.currentUser)
-        if known is None:
-            self.alert("User not found")
-            return
         password = self.passline0.value
         user, salt, passwordHash = known
         if not passwordHash == str(hash(password+salt)):
@@ -84,8 +91,39 @@ class accountForm(form):
         saveUserLoginData(user, npass)
 
         # return to home form
+        self.alert("Password Changed")
         self.clear()
         self.parentApp.masterPassword = npass
         self.parentApp.switchForm('Home')
+
+    def removeUser(self, thing):
+        """remove the user from the database"""
+        # check that the current password is correct
+        known = getUserLoginData(self.parentApp.currentUser)
+
+        password = self.passline3.value
+        user, salt, passwordHash = known
+        if not passwordHash == str(hash(password+salt)):
+            self.alert("Incorrect Current Password")
+            return
+        
+        # check that the new password is valid
+        if not self.passline4.value == self.passline3.value:
+            self.alert("Passwords do not match")
+            return
+        if self.passline4.value == "":
+            self.alert("Password cannot be blank")
+            return
+        
+        # remove user from database
+        removeUserData(self.parentApp.currentUser)
+
+        # return to home form
+        self.alert("Account Deleted")
+        self.clear()
+        self.parentApp.currentUser = None
+        self.parentApp.masterPassword = None
+        self.parentApp.getForm("MAIN").clear()
+        self.parentApp.switchForm('MAIN')
 
 
