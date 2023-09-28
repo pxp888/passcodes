@@ -216,6 +216,7 @@ class form():
         self.stuff = []
         self.focus = None
         self.active = []
+        self.parentApp = None
 
     def add(self, thing, x=3, y=-1):
         """Add a widget to the form.  The x and y coordinates are relative to the form.
@@ -233,9 +234,10 @@ class form():
 
     def draw(self):
         self.screen.clear()
-        if len(self.active) > 0:
-            self.focus = self.active[0]
-            self.active[0].focus = 2
+        if self.focus==None:
+            if len(self.active) > 0:
+                self.focus = self.active[0]
+                self.active[0].focus = 2
 
         for n in self.stuff:
             n.draw()
@@ -290,4 +292,53 @@ class form():
         #     self.focusPrev()
         else:
             self.focus.keypress(key)
+
+    def alert(self, msg):
+        """This displays a message."""
+        h = 5
+        w = len(msg) + 6
+        y = 5
+        x = 10
+        win = curses.newwin(h, w, y, x)
+        win.border()
+        win.addstr(2, 3, msg)
+        win.refresh()
+        win.getch()
+        del win
+        self.draw()
+
+    def clear(self):
+        """This clears all widgets."""
+        for i in self.stuff:
+            i.clear()
+        self.draw()
+
+
+class stuiApp():
+    def __init__(self, screen):
+        self.screen = screen
+        self.forms = {}
+        self.currentForm = None
+
+        self.masterPassword = None
+        self.currentUser = None
+    
+    def addform(self, name, nform):
+        self.forms[name] = nform
+        nform.parentApp = self
+
+    def switchForm(self, name):
+        self.currentForm = self.forms[name]
+        self.currentForm.draw()
+
+    def getForm(self, name):
+        return self.forms[name]
+
+    def run(self):
+        while 1:
+            n = self.screen.getkey()
+            if n == '\x1b': # escape
+                break
+            else:
+                self.currentForm.keypress(n)
 

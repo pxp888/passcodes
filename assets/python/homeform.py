@@ -1,5 +1,6 @@
 import npyscreen
 from helpers import *
+from tui import *
 
 
 class HomeForm(npyscreen.Form):
@@ -36,3 +37,27 @@ class HomeForm(npyscreen.Form):
         self.parentApp.masterPassword = None
         self.parentApp.getForm("MAIN").clear()
         self.parentApp.switchForm("MAIN")
+
+
+class shomeForm(form):
+    def __init__(self, screen):
+        super().__init__(screen)
+
+        self.viewButton = button('View Logins')
+        self.createButton = button('Create Login')
+        self.logoutButton = button('Logout')
+
+        self.logoutButton.callback = self.logout
+
+        self.add(self.viewButton)
+        self.add(self.createButton)
+        self.add(self.logoutButton)
+
+    def logout(self, thing=None):
+        self.parentApp.currentUser = None
+        self.parentApp.masterPassword = None
+        self.parentApp.getForm("MAIN").clear()
+        self.parentApp.switchForm("MAIN")
+
+
+
