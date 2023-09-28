@@ -19,7 +19,7 @@ from assets.python.viewloginform import *
 def main(stdscr):
     stdscr.clear()
     stdscr.refresh()
-    curses.curs_set(0)
+    # curses.curs_set(0)
 
     logform = loginForm(stdscr)
     homeform = homeForm(stdscr)
