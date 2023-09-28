@@ -26,6 +26,9 @@ class viewLoginForm(form):
         self.add(self.nameFilterLine)
         self.add(textline('-'*40))
         self.add(self.grid)
+
+        self.add(textline('Note - Not all entries may be shown on the list, use the name filter.'),y=height-3)
+        
         
         self.records = []
 
@@ -61,11 +64,11 @@ class viewLoginForm(form):
         win = curses.newwin(h, w, y, x)
         win.border()
 
-        win.addstr(1, 1, "{: >18} {: >18} {: >32}".format(*["Username", "URL", "Password"]))
+        win.addstr(1, 1, "{: >14} {: >14} {: >32}".format(*["Username", "URL", "Password"]))
         win.addstr(2, 1, "\u2500" * (w-2))
         for i in range(len(out)):
             # win.addstr(i+3, 1, "{: >12} {: >40} {: >20}".format(*out[i][1:]))
-            win.addstr(i+3, 1, "{: >18} {: >18} {: >32}".format(*[out[i][1], out[i][3], out[i][2]]))
+            win.addstr(i+3, 1, "{: >14} {: >14} {: >32}".format(*[out[i][1], out[i][3], out[i][2]]))
         win.refresh()
         win.getch()
         del win
