@@ -338,7 +338,7 @@ class stuiApp():
         while 1:
             n = self.screen.getkey()
             if n == '\x1b': # escape
-                break
+                pass
             else:
                 self.currentForm.keypress(n)
 

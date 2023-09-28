@@ -45,10 +45,14 @@ def main(stdscr):
 
     logform = sloginForm(stdscr)
     homeform = shomeForm(stdscr)
+    createform = screateLoginForm(stdscr)
+    viewform = sviewLoginForm(stdscr)
 
     app = stuiApp(stdscr)
     app.addform("MAIN", logform)
     app.addform("Home", homeform)
+    app.addform("CreateLogin", createform)
+    app.addform("ViewLogins", viewform)
 
     app.switchForm("MAIN")
     app.run()
