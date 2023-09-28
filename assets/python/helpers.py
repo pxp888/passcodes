@@ -142,4 +142,14 @@ def saveUserData(owner, name, username, password, url, masterPassword):
     cur.close()
 
 
+def removeUserData(owner):
+    # removes records for a user from the database
+    conn = getDBConnection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM passcodes WHERE OWNER = %s", (owner,))
+    cur.execute("DELETE FROM users WHERE USERNAME = %s", (owner,))
+    conn.commit()
+    cur.close()
+
+
 setupStorage()

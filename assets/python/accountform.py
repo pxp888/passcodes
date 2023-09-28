@@ -16,6 +16,7 @@ class accountForm(form):
         self.passButton = button('( Set New Password )')
 
         self.backButton.callback = self.cancel
+        self.passButton.callback = self.setNewPassword
 
         self.add(textline('Account Details'))
         height, width = self.screen.getmaxyx()
@@ -26,10 +27,14 @@ class accountForm(form):
         self.add(self.unameline)
         self.add(textline("\n\n"))
 
+        self.add(textline("To change master password, fill in the fields below'"))
         self.add(self.passline0)
         self.add(self.passline1)
         self.add(self.passline2)
         self.add(self.passButton)
+
+        
+
 
     def clear(self):
         self.unameline.label = 'Username: ' + self.parentApp.currentUser
@@ -41,5 +46,46 @@ class accountForm(form):
         self.parentApp.switchForm('Home')
 
     def setNewPassword(self, thing):
-        pass
+        """set a new password for the account"""
+        
+        # check that the current password is correct
+        known = getUserLoginData(self.parentApp.currentUser)
+        if known is None:
+            self.alert("User not found")
+            return
+        password = self.passline0.value
+        user, salt, passwordHash = known
+        if not passwordHash == str(hash(password+salt)):
+            self.alert("Incorrect Current Password")
+            return
+        
+        # check that the new password is valid
+        if not self.passline1.value == self.passline2.value:
+            self.alert("New Passwords do not match")
+            return
+        if self.passline1.value == "":
+            self.alert("New Password cannot be blank")
+            return
+        if len(self.passline1.value) < 6:
+            self.alert("New Password must be at least 6 characters")
+            return
+        
+        npass = self.passline1.value
+        records = getUserData(user, password)
+
+        # remove current data from database
+        removeUserData(self.parentApp.currentUser)
+
+        # re-add data to database with new password
+        for name, username, password, url in records:
+            saveUserData(user, name, username, password, url, npass)
+
+        # update the master password
+        saveUserLoginData(user, npass)
+
+        # return to home form
+        self.clear()
+        self.parentApp.masterPassword = npass
+        self.parentApp.switchForm('Home')
+
 

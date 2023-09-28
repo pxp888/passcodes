@@ -62,6 +62,9 @@ class loginForm(form):
         if password == "":
             self.alert("Password is required")
             return
+        if len(password) < 6:
+            self.alert("Password must be at least 6 characters")
+            return
 
         known = getUserLoginData(user)
         if known is None:
