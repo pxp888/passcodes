@@ -21,12 +21,12 @@ def main(stdscr):
     stdscr.refresh()
     curses.curs_set(0)
 
-    logform = sloginForm(stdscr)
-    homeform = shomeForm(stdscr)
-    createform = screateLoginForm(stdscr)
-    viewform = sviewLoginForm(stdscr)
+    logform = loginForm(stdscr)
+    homeform = homeForm(stdscr)
+    createform = createLoginForm(stdscr)
+    viewform = viewLoginForm(stdscr)
 
-    app = stuiApp(stdscr)
+    app = simpleTuiApp(stdscr)
     app.addform("MAIN", logform)
     app.addform("Home", homeform)
     app.addform("CreateLogin", createform)

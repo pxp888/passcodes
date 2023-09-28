@@ -5,7 +5,7 @@ from helpers import *
 from tui import *
 
 
-class screateLoginForm(form):
+class createLoginForm(form):
     def __init__(self, screen):
         super().__init__(screen)
 
@@ -30,7 +30,7 @@ class screateLoginForm(form):
         
         self.add(textline('Create Login'))
         height, width = self.screen.getmaxyx()
-        self.add(textline('\u2500'*(width-2)))
+        self.add(textline('\u2500'*(width-4)))
         self.add(self.name)
         self.add(self.url)
         self.add(self.username)

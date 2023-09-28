@@ -2,7 +2,7 @@ from helpers import *
 from tui import *
 
 
-class sloginForm(form):
+class loginForm(form):
     """ This is the login screen form that handles logging in and creating new accounts."""
     def __init__(self, screen):
         super().__init__(screen)
@@ -18,7 +18,7 @@ class sloginForm(form):
 
         self.add(textline("Welcome to Passcodes"))
         height, width = self.screen.getmaxyx()
-        self.add(textline('\u2500'*(width-2)))
+        self.add(textline('\u2500'*(width-4)))
         self.add(textline("\n\n"))
         self.add(self.username)
         self.add(self.password)

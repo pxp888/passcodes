@@ -4,7 +4,7 @@ from helpers import *
 from tui import *
 
 
-class sviewLoginForm(form):
+class viewLoginForm(form):
     def __init__(self, screen):
         super().__init__(screen)
 
@@ -21,7 +21,7 @@ class sviewLoginForm(form):
 
         self.add(textline('View Logins'))
         
-        self.add(textline('\u2500'*(width-2)))
+        self.add(textline('\u2500'*(width-4)))
         self.add(self.okButton)
         self.add(self.nameFilterLine)
         self.add(textline('-'*40))
@@ -61,11 +61,11 @@ class sviewLoginForm(form):
         win = curses.newwin(h, w, y, x)
         win.border()
 
-        win.addstr(1, 1, "{: >12} {: >40} {: >20}".format(*["Username", "Password", "URL"]))
+        win.addstr(1, 1, "{: >18} {: >18} {: >40}".format(*["Username", "URL", "Password"]))
         win.addstr(2, 1, "\u2500" * (w-2))
         for i in range(len(out)):
-            win.addstr(i+3, 1, "{: >12} {: >40} {: >20}".format(*out[i][1:]))
-
+            # win.addstr(i+3, 1, "{: >12} {: >40} {: >20}".format(*out[i][1:]))
+            win.addstr(i+3, 1, "{: >18} {: >18} {: >40}".format(*[out[i][1], out[i][3], out[i][2]]))
         win.refresh()
         win.getch()
         del win

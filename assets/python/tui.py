@@ -106,7 +106,7 @@ class button(textline):
 
     def keypress(self, key):
         super().keypress(key)
-        if key=='\n':
+        if key=='\n' or key==' ':
             if self.callback != None:
                 self.callback(self)
 
@@ -314,7 +314,7 @@ class form():
         self.draw()
 
 
-class stuiApp():
+class simpleTuiApp():
     def __init__(self, screen):
         self.screen = screen
         self.forms = {}
@@ -338,7 +338,8 @@ class stuiApp():
         while 1:
             n = self.screen.getkey()
             if n == '\x1b': # escape
-                break
+                # break
+                pass 
             else:
                 self.currentForm.keypress(n)
 

@@ -2,7 +2,7 @@ from helpers import *
 from tui import *
 
 
-class shomeForm(form):
+class homeForm(form):
     def __init__(self, screen):
         super().__init__(screen)
 
@@ -16,7 +16,7 @@ class shomeForm(form):
 
         self.add(textline('Passcodes Home'))
         height, width = self.screen.getmaxyx()
-        self.add(textline('\u2500'*(width-2)))
+        self.add(textline('\u2500'*(width-4)))
         self.add(textline("\n\n"))
         self.add(self.viewButton)
         self.add(self.createButton)
