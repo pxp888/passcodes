@@ -153,9 +153,12 @@ class filterList(textline):
         self.items = names
 
     def draw(self):
-        self.names = self.names[:self.maxlen]
+        row = 0
         for i in self.names:
             self.screen.addstr(self.y + self.names.index(i), self.x, i)
+            row +=1
+            if row == self.maxlen:
+                break
         if self.focus==2:
             if self.selected >= 0 and self.selected < len(self.names):
                 self.screen.addstr(self.y + self.selected, self.x, self.names[self.selected], curses.A_REVERSE)
@@ -165,17 +168,19 @@ class filterList(textline):
             self.screen.addstr(self.y + self.names.index(i), self.x, ' '*len(i))
 
     def filter(self, thing):
-        ss = thing.value.lower()
+        searchTerm = thing.value.lower()
         self.clear()
         self.selected=-1
         row = 0
         self.names = []
         for i in self.items:
-            if ss in i.lower():
-                self.screen.addstr(self.y + row, self.x, i)
+            if searchTerm in i.lower():
+                # self.screen.addstr(self.y + row, self.x, i)
                 self.names.append(i)
                 row += 1
-        self.names = self.names[:self.maxlen]
+        
+        self.draw()
+
 
     def keypress(self, key):
         if key=='KEY_DOWN':

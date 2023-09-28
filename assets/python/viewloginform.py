@@ -40,7 +40,7 @@ class viewLoginForm(form):
         for record in self.records:
             # disp[record[0]] = "{: >30} {: >30}".format(*[record[0], record[3]])
             disp[record[0]] = record[0]
-        disp = list(disp.values())[:self.grid.maxlen]
+        disp = list(disp.values())
         self.grid.setItems(disp)
         self.grid.draw()
 
@@ -61,11 +61,11 @@ class viewLoginForm(form):
         win = curses.newwin(h, w, y, x)
         win.border()
 
-        win.addstr(1, 1, "{: >18} {: >18} {: >40}".format(*["Username", "URL", "Password"]))
+        win.addstr(1, 1, "{: >18} {: >18} {: >32}".format(*["Username", "URL", "Password"]))
         win.addstr(2, 1, "\u2500" * (w-2))
         for i in range(len(out)):
             # win.addstr(i+3, 1, "{: >12} {: >40} {: >20}".format(*out[i][1:]))
-            win.addstr(i+3, 1, "{: >18} {: >18} {: >40}".format(*[out[i][1], out[i][3], out[i][2]]))
+            win.addstr(i+3, 1, "{: >18} {: >18} {: >32}".format(*[out[i][1], out[i][3], out[i][2]]))
         win.refresh()
         win.getch()
         del win
