@@ -54,7 +54,7 @@ class viewLoginForm(form):
 
         height, width = self.screen.getmaxyx()
         h = height - 10
-        w = width - 8
+        w = width - 4
         if len(out) > (h-2):
             out = out[:h-2]
         y = 2
