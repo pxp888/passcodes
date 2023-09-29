@@ -314,6 +314,25 @@ class form():
         del win
         self.draw()
 
+    def confirm(self, msg):
+        """This displays a message and returns True if the user presses 'y' or 'Y'."""
+        h = 7
+        w = len(msg) + 6
+        y = 5
+        x = 10
+        win = curses.newwin(h, w, y, x)
+        win.border()
+        win.addstr(2, 3, msg)
+        win.addstr(4, 3, "Press 'Y' to accept")
+        win.refresh()
+        n = win.getch()
+        del win
+        self.draw()
+        if n == ord('y') or n == ord('Y'):
+            return True
+        else:
+            return False
+
     def clear(self):
         """This clears all widgets."""
         for i in self.stuff:

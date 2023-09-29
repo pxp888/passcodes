@@ -73,9 +73,11 @@ class createLoginForm(form):
         if int(self.passLength.value) > 40:
             self.alert("Password length cannot exceed 40")
             self.passLength.value = '40'
+            self.passLength.draw()
         if int(self.passLength.value) < 6:
             self.alert("Password length must be at least 6")
             self.passLength.value = '6'
+            self.passLength.draw()
 
         random.seed(time.time())
         letterpool = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -109,10 +111,13 @@ class createLoginForm(form):
             self.alert("Password length is required")
             return
         if len(self.password.value) < 6:
-            self.alert("Password must be at least 6 characters")
-            return
+            if not self.confirm('Password is short, are you sure?'):
+                return
+        if len(self.password.value) > 40:
+            if not self.confirm('Password is long, are you sure?'):
+                return
         
-
+            
         currentuser = self.parentApp.currentUser
         masterPassword = self.parentApp.masterPassword
         saveUserData(currentuser, self.name.value, self.username.value, self.password.value, self.url.value, masterPassword)
