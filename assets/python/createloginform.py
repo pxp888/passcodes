@@ -107,17 +107,22 @@ class createLoginForm(form):
         if self.name.value == "":
             self.alert("Name field is required")
             return
-        if self.passLength.value == "":
-            self.alert("Password length is required")
-            return
         if len(self.password.value) < 6:
             if not self.confirm('Password is short, are you sure?'):
                 return
         if len(self.password.value) > 40:
             if not self.confirm('Password is long, are you sure?'):
                 return
-        
-            
+    
+        numberpool = "0123456789"
+        symbolpool = "!@#$%^&*()_+-=[];:,./<>?"
+        if self.numbers.value and not re.search(r'[{}]'.format(numberpool), self.password.value):
+            if not self.confirm("Password does not contain a number, are you sure?"):
+                return
+        if self.symbols.value and not re.search(r'[{}]'.format(re.escape(symbolpool)), self.password.value):
+            if not self.confirm("Password does not contain a symbol, are you sure?"):
+                return
+    
         currentuser = self.parentApp.currentUser
         masterPassword = self.parentApp.masterPassword
         saveUserData(currentuser, self.name.value, self.username.value, self.password.value, self.url.value, masterPassword)

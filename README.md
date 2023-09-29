@@ -50,6 +50,8 @@ Passcodes is a very simple password manager written in Python. Each record consi
 * __Confirmation dialog for user actions__
     * Users are asked to confirm before executing certain actions, such as changing passwords or deleting user accounts. 
 
+    ![confirm dialog](assets/images/confirm.webp)
+
 * __PostgreSQL database__
     * The database is PostgreSQL, which is a relational database. 
 
