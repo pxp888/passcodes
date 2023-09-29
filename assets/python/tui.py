@@ -1,17 +1,17 @@
 import os
 import curses
 
-
-def mess(msg):
-    a ="curl -s -d '" + str(msg) + "' 52.56.34.125/test > /dev/null"
-    os.system(a)
+"""
+This file describes interface classes used to quickly
+build a text-based user interface.
+"""
 
 
 class textline():
     """This is the base widget class.  By itself it only shows text."""
     def __init__(self, label=''):
-        self.screen = None # to be set during form.add()
-        self.parent = None # to be set during form.add()
+        self.screen = None  # to be set during form.add()
+        self.parent = None  # to be set during form.add()
         self.callback = None
 
         self.label = label
@@ -31,27 +31,27 @@ class textline():
         self.parent.active.remove(self)
 
     def keypress(self, key):
-        if key=='KEY_DOWN':
-            if self.parent != None:
+        if key == 'KEY_DOWN':
+            if self.parent is not None:
                 self.parent.focusNext()
-        elif key=='KEY_UP':
-            if self.parent != None:
+        elif key == 'KEY_UP':
+            if self.parent is not None:
                 self.parent.focusPrev()
 
 
 class lineEdit(textline):
-    """This is a lineEdit with a label and an editable field.  To respond to the user pressing
-    enter or return, set the callback function.  To respond to individual keypresses, set the
-    pressCallback function."""
+    """This is a lineEdit with a label and an editable field.  To respond
+    to the user pressing enter or return, set the callback function.
+    To respond to individual keypresses, set the pressCallback function."""
 
     def __init__(self, label=''):
         super().__init__(label)
         self.value = ''
-        self.focus=1
+        self.focus = 1
         self.pressCallback = None
 
     def draw(self):
-        if self.focus==2:
+        if self.focus == 2:
             self.screen.addstr(self.y, self.x, ' '*50)
             self.screen.addstr(self.y, self.x, self.label, curses.A_REVERSE)
             self.screen.addstr(self.y, self.x + len(self.label), self.value, curses.A_REVERSE)
@@ -61,28 +61,28 @@ class lineEdit(textline):
             self.screen.addstr(self.y, self.x + len(self.label), self.value)
 
     def keypress(self, key):
-        if key=='KEY_BACKSPACE':
+        if key == 'KEY_BACKSPACE':
             if len(self.value) > 0:
                 self.value = self.value[:-1] + ' '
                 self.draw()
                 self.value = self.value[:-1]
                 self.draw()
-        elif key=='\n':
-            if self.callback != None:
+        elif key == '\n':
+            if self.callback is not None:
                 self.callback(self)
-        elif key=='KEY_DOWN':
-            if self.parent != None:
+        elif key == 'KEY_DOWN':
+            if self.parent is not None:
                 self.parent.focusNext()
-        elif key=='KEY_UP':
-            if self.parent != None:
+        elif key == 'KEY_UP':
+            if self.parent is not None:
                 self.parent.focusPrev()
-        elif key=='KEY_LEFT' or key=='KEY_RIGHT':
+        elif key == 'KEY_LEFT' or key == 'KEY_RIGHT':
             pass
         else:
             self.value += key
             self.draw()
 
-        if self.pressCallback != None:
+        if self.pressCallback is not None:
             self.pressCallback(self)
 
     def clear(self):
@@ -91,23 +91,24 @@ class lineEdit(textline):
 
 
 class button(textline):
-    """This is effectively a button.  It is actually a selectable piece of text.
-    To respond to the user pressing enter or return, set the callback function."""
+    """This is effectively a button.  It is actually a selectable piece of
+    text. To respond to the user pressing enter or return, set the callback
+    function."""
 
     def __init__(self, label=''):
         super().__init__(label)
         self.focus = 1
 
     def draw(self):
-        if self.focus==2:
+        if self.focus == 2:
             self.screen.addstr(self.y, self.x, self.label, curses.A_REVERSE)
         else:
             self.screen.addstr(self.y, self.x, self.label, curses.color_pair(1))
 
     def keypress(self, key):
         super().keypress(key)
-        if key=='\n' or key==' ':
-            if self.callback != None:
+        if key == '\n' or key == ' ':
+            if self.callback is not None:
                 self.callback(self)
 
 
@@ -122,23 +123,23 @@ class checkbox(textline):
         msg = self.label + ' [ ]'
         if self.value:
             msg = self.label + ' [X]'
-        if self.focus==2:
+        if self.focus == 2:
             self.screen.addstr(self.y, self.x, msg, curses.A_REVERSE)
         else:
             self.screen.addstr(self.y, self.x, msg, curses.color_pair(1))
 
     def keypress(self, key):
         super().keypress(key)
-        if key=='\n' or key==' ':
+        if key == '\n' or key == ' ':
             self.value = not self.value
             self.draw()
-            if self.callback != None:
+            if self.callback is not None:
                 self.callback(self)
 
 
 class filterList(textline):
-    """This is a list of items that can be filtered by typing in a lineEdit.  To respond to the user
-    pressing enter or return, set the callback function.
+    """This is a list of items that can be filtered by typing in a lineEdit.
+    To respond to the user pressing enter or return, set the callback function.
     """
 
     def __init__(self, label=''):
@@ -156,12 +157,12 @@ class filterList(textline):
     def draw(self):
         for i in self.names:
             self.screen.addstr(self.y + self.names.index(i), self.x, i)
-        if self.focus==2:
+        if self.focus == 2:
             if self.selected >= 0 and self.selected < len(self.names):
                 row = self.y + self.selected
                 self.screen.addstr(row, self.x, self.names[self.selected], curses.A_REVERSE)
             else:
-                self.selected=-1
+                self.selected = -1
 
     def clear(self):
         for i in self.names:
@@ -170,7 +171,7 @@ class filterList(textline):
     def filter(self, thing):
         searchTerm = thing.value.lower()
         self.clear()
-        self.selected=-1
+        self.selected = -1
         row = 0
         self.names = []
         for i in self.items:
@@ -183,7 +184,7 @@ class filterList(textline):
         self.draw()
 
     def keypress(self, key):
-        if key=='KEY_DOWN':
+        if key == 'KEY_DOWN':
             if not self.names:
                 pass
             elif self.selected == -1:
@@ -192,7 +193,7 @@ class filterList(textline):
                 if self.names:
                     self.selected = (self.selected + 1) % len(self.names)
             self.draw()
-        elif key=='KEY_UP':
+        elif key == 'KEY_UP':
             if self.selected == 0:
                 self.selected = -1
                 self.parent.focusPrev()
@@ -200,8 +201,8 @@ class filterList(textline):
                 if self.names:
                     self.selected = (self.selected - 1) % len(self.names)
                 self.draw()
-        elif key=='\n':
-            if self.callback != None:
+        elif key == '\n':
+            if self.callback is not None:
                 self.callback(self)
         else:
             pass
@@ -214,7 +215,9 @@ class filterList(textline):
 
 
 class form():
-    """This is a container for widgets.  It is the top level widget that manages its children."""
+    """This is a container for widgets.  This manages the widgets.
+    Which widget has focus, and directs keypresses to the correct widget.
+    """
 
     def __init__(self, screen):
         self.screen = screen
@@ -224,8 +227,8 @@ class form():
         self.parentApp = None
 
     def add(self, thing, x=3, y=-1):
-        """Add a widget to the form.  The x and y coordinates are relative to the form.
-        If y is -1, the widget is added to the end of the list."""
+        """Add a widget to the form.  The x and y coordinates are relative
+        to the form. If y is -1, the widget is added to the end of the list."""
         thing.screen = self.screen
         thing.parent = self
         if y == -1:
@@ -239,7 +242,7 @@ class form():
 
     def draw(self):
         self.screen.clear()
-        if self.focus==None:
+        if self.focus is None:
             if len(self.active) > 0:
                 self.focus = self.active[0]
                 self.active[0].focus = 2
@@ -249,7 +252,7 @@ class form():
         self.focus.draw()
 
     def focusNext(self):
-        if self.focus == None:
+        if self.focus is None:
             return
         self.focus.focus = 1
         self.focus.draw()
@@ -262,7 +265,7 @@ class form():
         self.focus.draw()
 
     def focusPrev(self):
-        if self.focus == None:
+        if self.focus is None:
             return
         self.focus.focus = 1
         self.focus.draw()
@@ -287,21 +290,21 @@ class form():
         return out
 
     def keypress(self, key):
-        if self.focus == None:
+        if self.focus is None:
             return
-        if key=='\t':
+        if key == '\t':
             self.focusNext()
-        elif key=='KEY_BTAB':
+        elif key == 'KEY_BTAB':
             self.focusPrev()
-        # elif key=='KEY_DOWN':
+        # elif key == 'KEY_DOWN':
         #     self.focusNext()
-        # elif key=='KEY_UP':
+        # elif key == 'KEY_UP':
         #     self.focusPrev()
         else:
             self.focus.keypress(key)
 
     def alert(self, msg):
-        """This displays a message."""
+        """This displays a message to the user."""
         h = 5
         w = len(msg) + 6
         y = 5
@@ -315,7 +318,9 @@ class form():
         self.draw()
 
     def confirm(self, msg):
-        """This displays a message and returns True if the user presses 'y' or 'Y'."""
+        """This displays a message and returns True if
+        the user presses 'y' or 'Y'."""
+
         h = 7
         w = len(msg) + 6
         y = 5
@@ -338,14 +343,15 @@ class form():
         for i in self.stuff:
             i.clear()
         for i in self.active:
-            i.focus=1
+            i.focus = 1
         self.focus = self.active[0]
-        self.focus.focus=2
+        self.focus.focus = 2
         self.draw()
 
 
 class simpleTuiApp():
-    """This is the main application class.  It manages forms and keyboard presses."""
+    """This is the main application class.
+    It manages forms and keyboard presses."""
 
     def __init__(self, screen):
         self.screen = screen
@@ -369,9 +375,7 @@ class simpleTuiApp():
     def run(self):
         while 1:
             n = self.screen.getkey()
-            if n == '\x1b': # escape
-                # break
+            if n == '\x1b':  # escape
                 pass
             else:
                 self.currentForm.keypress(n)
-
