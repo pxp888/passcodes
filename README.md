@@ -186,6 +186,16 @@ The view entries form shows a list of records.  This list can be filtered dynami
 
 The user can select a record by clicking on it, or by using the up and down arrow keys.  The details of the selected record are shown in the details view.
 
+### Account Management
+
+Only two actions are available to the user for account management. The user can change their master password, or they can delete their account.
+
+To change their password the user must enter the current password, and the enter the new password twice.  After that they must confirm that they want this change.  
+
+This requires that all entries are decrypted and re-encrypted using the new password.  So the user is actually deleted from the database, and then re-added with the new password and all entries re-encrypted with the new password.  
+
+To delete their account the user must enter their current password twice, and then confirm that this is a desired action.  At that point the user and all their entries are deleted from the database, and the application returns to the login screen.
+
 ## Interface classes
 
 ~~~mermaid 
