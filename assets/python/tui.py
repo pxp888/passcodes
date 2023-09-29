@@ -125,7 +125,7 @@ class checkbox(textline):
         if self.focus==2:
             self.screen.addstr(self.y, self.x, msg, curses.A_REVERSE)
         else:
-            self.screen.addstr(self.y, self.x, msg)
+            self.screen.addstr(self.y, self.x, msg, curses.color_pair(1))
 
     def keypress(self, key):
         super().keypress(key)
@@ -336,7 +336,7 @@ class simpleTuiApp():
         self.masterPassword = None
         self.currentUser = None
 
-        curses.init_pair(1, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)
         curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
     
     def addform(self, name, nform):
