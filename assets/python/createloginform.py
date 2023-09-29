@@ -59,6 +59,7 @@ class createLoginForm(form):
 
     def generate(self, thing=None):
         # generate a random password
+        
         if self.passLength.value == '':
             self.passLength.value = '16'
         try:
@@ -76,20 +77,18 @@ class createLoginForm(form):
             self.passLength.value = '6'
 
         random.seed(time.time())
+        letterpool = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        numberpool = "0123456789"
+        symbolpool = "!@#$%^&*()_+-=[]{};:,./<>?"
+        pool = letterpool
+
+        if self.numbers.value:
+            pool += numberpool
+        if self.symbols.value:
+            pool += symbolpool
         code = ''
         while len(code) < int(self.passLength.value):
-            n = random.randint(33, 122)
-            if self.numbers.value == False and n >= 48 and n <= 57: continue
-            if self.symbols.value == False:
-                if n >= 33 and n <= 47:
-                    continue
-                if n >= 58 and n <= 64:
-                    continue
-                if n >= 91 and n <= 96:
-                    continue
-                if n >= 123 and n <= 126:
-                    continue
-            code += chr(n)
+            code += random.choice(pool)
         self.password.value = code
         self.password.draw()
 
