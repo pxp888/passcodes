@@ -4,7 +4,28 @@
 
 
 ## Description
-Passcodes is a very simple password manager written in Python. Each record consists of a name, username, password, and URL. 
+Passcodes is a very simple password manager written in Python with a text based user interface. Each record consists of a name, username, password, and URL. Passwords are cryptographically secured.  
+
+
+## Table of Contents
+* [Description](#description)
+* [UX](#ux)
+    * [Features](#features)
+    * [Cryptographic Security](#cryptographic-security)
+    * [Interface Flowchart](#interface-flowchart)
+    * [Interface classes](#interface-classes)
+    * [Application Structure](#application-structure)
+    * [Database Structure](#database-structure)
+    * [Database functions](#database-functions)
+* [Technologies and Frameworks used](#technologies-and-frameworks-used)
+* [Deployment and Local Development](#deployment-and-local-development)
+* [Pending Improvements](#pending-improvements)
+* [Testing](#testing)
+* [Validation](#validation)
+    * [Limitations](#limitations)
+
+
+
 
 ## Features
 * __Secure login__
@@ -374,9 +395,11 @@ All files passed the linter with no errors or warnings, except for __"E501 line 
 
 These warnings were addressed where possible, but some code lines are difficult to split. In these cases the lines were left as is.
 
+__run.py__ has warnings because `sys.path.append("assets/python")` exists above import statements.  This is can be avoided by having all python files in the same folder as __run.py__, but it seemed neater to have them in their own subfolder.  
 
 
-### Limitations
+
+## Limitations
 The app requires the database to be available.  Currently the app is running on Heroku, and the The database is hosted on an AWS EC2 instance, which could cause a problem if either platform is unavailable, or if there is a problem with the network connection between the two platforms.
 
 
