@@ -7,7 +7,8 @@ import psycopg2
 from cryptography.fernet import Fernet
 
 # CRYPTOGRAPHY FUNCTIONS
-# These are defined here to make it easier to change the encryption methods later
+# These are defined here to make it easier to change
+# the encryption methods later
 
 
 def hash(plaintext):
@@ -32,9 +33,11 @@ def decrypt(ciphertext, key):
 
 
 # DATABASE FUNCTIONS
-# These are defined here to make it easier to change the database later.  
-# The global variable db_connection is used to store the database connection, so it can be re-used.
-# The database connection details are stored in environment variables, DB_PW and DB_IP for the password and IP address respectively.
+# These are defined here to make it easier to change the database later.
+# The global variable db_connection is used to store the database connection,
+# so it can be re-used.
+# The database connection details are stored in environment variables,
+# DB_PW and DB_IP for the password and IP address respectively.
 
 db_connection = None
 
@@ -72,7 +75,8 @@ def getDBConnection():
 
 
 def setupStorage():
-    # create database tables if they don't exist.  This should only be called once at the start of the application.
+    # create database tables if they don't exist.  This should only
+    # be called once at the start of the application.
     conn = getDBConnection()
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS passcodes

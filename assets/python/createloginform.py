@@ -1,6 +1,6 @@
 import time
 import random
-import re 
+import re
 
 from helpers import *
 from tui import *
@@ -46,26 +46,23 @@ class createLoginForm(form):
         self.passLength.value = '16'
         self.generate()
 
-
     def clear(self):
         super().clear()
         self.generate()
-
 
     def cancel(self, thing=None):
         # cancel the creation of the login and return to home
         self.clear()
         self.parentApp.switchForm('Home')
 
-
     def generate(self, thing=None):
         # generate a random password
-        
+
         if self.passLength.value == '':
             self.passLength.value = '16'
         try:
             n = int(self.passLength.value)
-        except:
+        except ValueError:
             self.alert("Password length must be a number")
             self.passLength.value = ''
             return
@@ -97,10 +94,9 @@ class createLoginForm(form):
             if self.symbols.value and not re.search(r'[{}]'.format(re.escape(symbolpool)), code):
                 continue
             break
-        
+
         self.password.value = code
         self.password.draw()
-
 
     def on_ok(self, thing=None):
         # save the login to the database
@@ -113,7 +109,7 @@ class createLoginForm(form):
         if len(self.password.value) > 40:
             if not self.confirm('Password is long, are you sure?'):
                 return
-    
+
         numberpool = "0123456789"
         symbolpool = "!@#$%^&*()_+-=[];:,./<>?"
         if self.numbers.value and not re.search(r'[{}]'.format(numberpool), self.password.value):
@@ -122,11 +118,10 @@ class createLoginForm(form):
         if self.symbols.value and not re.search(r'[{}]'.format(re.escape(symbolpool)), self.password.value):
             if not self.confirm("Password does not contain a symbol, are you sure?"):
                 return
-    
+
         currentuser = self.parentApp.currentUser
         masterPassword = self.parentApp.masterPassword
         saveUserData(currentuser, self.name.value, self.username.value, self.password.value, self.url.value, masterPassword)
 
         self.clear()
         self.parentApp.switchForm("Home")
-

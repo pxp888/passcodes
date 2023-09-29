@@ -3,10 +3,12 @@ from tui import *
 
 
 class loginForm(form):
-    """ This is the login screen form that handles logging in and creating new accounts."""
+    """ This is the login screen form that handles logging in
+    and creating new accounts."""
+
     def __init__(self, screen):
         super().__init__(screen)
-        
+
         self.username = lineEdit("Username: ")
         self.password = lineEdit("Password: ")
 
@@ -50,7 +52,7 @@ class loginForm(form):
             self.parentApp.switchForm("Home")
             return
         else:
-            self.alert("Incorrect Password") 
+            self.alert("Incorrect Password")
             return
 
     def createAccount(self, thing=None):
@@ -79,4 +81,3 @@ class loginForm(form):
         else:
             self.alert("User already exists")
             return
-

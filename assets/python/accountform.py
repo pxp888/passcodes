@@ -9,7 +9,7 @@ class accountForm(form):
         self.backButton = button('( Back )')
 
         self.unameline = textline('Username: ')
-        
+
         self.passline0 = lineEdit('Current Password: ')
         self.passline1 = lineEdit('    New Password: ')
         self.passline2 = lineEdit('Confirm Password: ')
@@ -57,7 +57,7 @@ class accountForm(form):
 
     def setNewPassword(self, thing):
         """set a new password for the account"""
-        
+
         # check that the current password is correct
         known = getUserLoginData(self.parentApp.currentUser)
         password = self.passline0.value
@@ -65,7 +65,7 @@ class accountForm(form):
         if not passwordHash == str(hash(password+salt)):
             self.alert("Incorrect Current Password")
             return
-        
+
         # check that the new password is valid
         if not self.passline1.value == self.passline2.value:
             self.alert("New Passwords do not match")
@@ -76,10 +76,10 @@ class accountForm(form):
         if len(self.passline1.value) < 6:
             self.alert("New Password must be at least 6 characters")
             return
-        
+
         if not self.confirm("Are you sure you want to change your password?"):
-            return 
-        
+            return
+
         npass = self.passline1.value
         records = getUserData(user, password)
 
@@ -112,7 +112,7 @@ class accountForm(form):
         if not passwordHash == str(hash(password+salt)):
             self.alert("Incorrect Current Password")
             return
-        
+
         # check that the new password is valid
         if not self.passline4.value == self.passline3.value:
             self.alert("Passwords do not match")
@@ -120,7 +120,7 @@ class accountForm(form):
         if self.passline4.value == "":
             self.alert("Password cannot be blank")
             return
-        
+
         # remove user from database
         removeUserData(self.parentApp.currentUser)
 
@@ -131,5 +131,3 @@ class accountForm(form):
         self.parentApp.masterPassword = None
         self.parentApp.getForm("MAIN").clear()
         self.parentApp.switchForm('MAIN')
-
-

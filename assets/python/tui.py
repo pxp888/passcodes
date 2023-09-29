@@ -20,7 +20,7 @@ class textline():
         self.focus = 0
 
     def draw(self):
-        self.screen.addstr(self.y, self.x, self.label, curses.color_pair(2)) 
+        self.screen.addstr(self.y, self.x, self.label, curses.color_pair(2))
 
     def clear(self):
         self.draw()
@@ -161,7 +161,7 @@ class filterList(textline):
                 row = self.y + self.selected
                 self.screen.addstr(row, self.x, self.names[self.selected], curses.A_REVERSE)
             else:
-                self.selected=-1           
+                self.selected=-1
 
     def clear(self):
         for i in self.names:
@@ -352,12 +352,9 @@ class simpleTuiApp():
         self.forms = {}
         self.currentForm = None
 
-        # self.masterPassword = None
-        # self.currentUser = None
-
         curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)
         curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
-    
+
     def addform(self, name, nform):
         self.forms[name] = nform
         nform.parentApp = self
@@ -374,7 +371,7 @@ class simpleTuiApp():
             n = self.screen.getkey()
             if n == '\x1b': # escape
                 # break
-                pass 
+                pass
             else:
                 self.currentForm.keypress(n)
 
