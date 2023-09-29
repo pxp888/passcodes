@@ -37,6 +37,11 @@ Passcodes is a very simple password manager written in Python. Each record consi
 * __Multiple records for each name__
     * Multiple records can exist for each name.  This allows the user to store a history of records for each name.
 
+* __User Account Management__ 
+    * Users can change their master password, or delete their account.  The master password is required to change the password or delete the account.
+
+    ![account details form](assets/images/account.webp)
+
 * __User Alerts for input errors__
     * Users are alerted if they enter an invalid inputs.  This includes invalid blank entries, wrong passwords, and duplicate usernames.
 
