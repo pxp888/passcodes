@@ -178,6 +178,9 @@ class filterList(textline):
             page = self.selected // self.maxlen
         else:
             page = 0
+            if self.names:
+                self.selected = 0
+
 
         start = page * self.maxlen
         end = start + self.maxlen
