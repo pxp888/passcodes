@@ -16,7 +16,7 @@ class viewLoginForm(form):
         self.nameFilterLine.pressCallback = self.grid.filter
         
         height, width = self.screen.getmaxyx()
-        self.grid.maxlen = height - 11
+        self.grid.maxlen = height - 10
         self.grid.callback = self.itemPicked
 
         self.add(textline('View Logins'))
@@ -28,8 +28,6 @@ class viewLoginForm(form):
         self.add(self.nameFilterLine)
         self.add(textline('-'*40))
         self.add(self.grid)
-
-        self.add(textline('Note - Not all entries may be shown on the list, use the name filter.'),y=height-2)
         
         self.records = []
 
@@ -39,7 +37,6 @@ class viewLoginForm(form):
     def update(self):
         self.nameFilterLine.value = ""
         self.records = getUserData(self.parentApp.currentUser, self.parentApp.masterPassword)
-        
         disp = {}
         for record in self.records:
             # disp[record[0]] = "{: >30} {: >30}".format(*[record[0], record[3]])

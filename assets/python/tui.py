@@ -148,39 +148,57 @@ class filterList(textline):
         self.items = []
         self.focus = 1
         self.selected = -1
-        self.maxlen = 8
+        self.maxlen = 5
+        self.fterm = ''
 
     def setItems(self, names):
         self.names = names[:self.maxlen]
         self.items = names
+        self.fterm = ''
+        self.selected = -1
 
     def draw(self):
-        for i in self.names:
-            self.screen.addstr(self.y + self.names.index(i), self.x, i)
-        if self.focus == 2:
-            if self.selected >= 0 and self.selected < len(self.names):
-                row = self.y + self.selected
-                self.screen.addstr(row, self.x, self.names[self.selected], curses.A_REVERSE)
+        height, width = self.screen.getmaxyx()
+        for i in range(self.maxlen):
+            self.screen.addstr(self.y + i, self.x, ' '*(width-self.x))
+
+        if self.fterm == '':
+            self.names = self.items
+        else:
+            self.names = []
+            for i in self.items:
+                if self.fterm.lower() in i.lower():
+                    self.names.append(i)
+        
+        if not self.names:
+            self.screen.addstr(self.y, self.x, 'No entries found.')
+            return
+
+        if self.selected > -1:
+            page = self.selected // self.maxlen
+        else:
+            page = 0
+
+        start = page * self.maxlen
+        end = start + self.maxlen
+
+        for i in range(start, end):
+            if i >= len(self.names):
+                break
+            if self.focus == 2 and i == self.selected:
+                self.screen.addstr(self.y + i - start, self.x, self.names[i], curses.A_REVERSE)
             else:
-                self.selected = -1
+                self.screen.addstr(self.y + i - start, self.x, self.names[i])
+        self.screen.move(self.y - 1 , self.x)
 
     def clear(self):
-        for i in self.names:
-            self.screen.addstr(self.y + self.names.index(i), self.x, ' '*len(i))
+        height, width = self.screen.getmaxyx()
+        for i in range(self.maxlen):
+            self.screen.addstr(self.y + i, self.x, ' '*(width-self.x))
 
     def filter(self, thing):
-        searchTerm = thing.value.lower()
-        self.clear()
+        self.fterm = thing.value.lower()
         self.selected = -1
-        row = 0
-        self.names = []
-        for i in self.items:
-            if searchTerm in i.lower():
-                # self.screen.addstr(self.y + row, self.x, i)
-                self.names.append(i)
-                row += 1
-                if row > self.maxlen:
-                    break
         self.draw()
 
     def keypress(self, key):
@@ -204,6 +222,22 @@ class filterList(textline):
         elif key == '\n':
             if self.callback is not None:
                 self.callback(self)
+        elif key == 'KEY_NPAGE':
+            if self.selected == -1:
+                self.selected = 0
+            else:
+                self.selected = (self.selected + self.maxlen)
+                if self.selected >= len(self.names): 
+                    self.selected = len(self.names) - 1
+            self.draw()
+        elif key == 'KEY_PPAGE':
+            if self.selected == -1:
+                self.selected = 0
+            else:
+                self.selected = (self.selected - self.maxlen)
+                if self.selected < 0:
+                    self.selected = 0
+            self.draw()
         else:
             pass
 

@@ -348,10 +348,6 @@ The database is accessed by the app using the psycopg2 library.  The database UR
 * __add ability to edit or delete login records__
     * Currently there is no method of editing or deleting login records.  I would like to add this functionality.  There are multiple entries allowed for each login name, so this does not hurt the functionality of the app, but it would be cleaner to allow editing and deleting of records.
 
-* __improve filterlist widget__
-    * The filterlist widget is used to search for login records by name.  It works well enough for search, but it users cannot browse records.  It does not show multiple "pages" of records, and it does not allow the user to scroll through the list.  I would like to improve this widget to allow browsing of records without directly searching.
-
-
 ## Testing
 
 The app was tested manually.  There is intentionally minimal limitations placed on user inputs.  In general all data is recorded as strings, so there are no issues with data types.  The only type conversion that is done is converting the password length setting from a string to an integer.  
