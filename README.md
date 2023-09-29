@@ -197,7 +197,7 @@ This makes it easy to create new forms, and to re-use the same widgets in differ
 
 The __tui.py__ file contains the following classes:
 
-### Widgets
+### Widget classes
 The widgets are the basic building blocks of the interface.  Each widget has a position, a size, and a label.  The widgets are drawn on the screen using the curses library. They can also be associated with callback functions to respond to user inputs. 
 
 * __textline__ This is the base class for all widgets.  It simply displays a line of text.  
@@ -224,7 +224,7 @@ Forms are created and then added to the simpleTuiApp object.  Then the simpleTui
 
 
 ## Application Structure
-There are five forms used in this application.  Each form is a subclass of the form class in the __tui.py__ file.  Each form has its own widgets, and its own logic.
+There are five forms used in this application.  Each form is a subclass of the __form__ class defined in the __tui.py__ file.  Each form has its own widgets, and its own logic.
 
 * __loginForm__ - Handles logging in users and creating new accounts.
 * __homeForm__ - The home menu.  Provides buttons to navigate to the other forms, or logout.  
@@ -235,6 +235,8 @@ There are five forms used in this application.  Each form is a subclass of the f
 
 ## Database Structure
 The database is PostgreSQL, which is a relational database.  The database has two tables, one for users, and one for login records.  Database requirements for this application are relatively simple, and the database structure is also simple.
+
+The SQL querries are straightforward, with no joins or subqueries.  The database is accessed using the psycopg2 library.
 
 __Table Structure__
 
@@ -252,17 +254,12 @@ There are only five calls to the database in this application.  The database fun
 
 The database functions are:
 
-__setupStorage()__ - Creates the database tables if they do not exist.
-
-__getUserLoginData()__ - Retrieves the salt and hashed password for a given username.
-
-__saveUserLoginData()__ - Saves the salt and hashed password for a given username.
-
-__getUserData()__ - Retrieves the login records for a given username.
-
-__saveUserData()__ - Saves the login records for a given username.
-
-__removeUserData()__ - Removes all login records for a given username, and removes the user from the users table.
+* __setupStorage()__ - Creates the database tables if they do not exist.
+* __getUserLoginData()__ - Retrieves the salt and hashed password for a given username.
+* __saveUserLoginData()__ - Saves the salt and hashed password for a given username.
+* __getUserData()__ - Retrieves the login records for a given username.
+* __saveUserData()__ - Saves the login records for a given username.
+* __removeUserData()__ - Removes all login records for a given username, and removes the user from the users table.
 
 The connection to the database is stored in a global variable to enable re-using the same connection instead of creating a new connection for each call.  This is done to improve performance.
 
@@ -292,11 +289,14 @@ The database is accessed by the app using the psycopg2 library.  The database UR
 
 
 ## Pending Improvements
-* __move database to Heroku__
+* __move database to Heroku (maybe)__
     * I happened to have an AWS EC2 instance running, so I used that to host the database.  It might make sense to move the database to Heroku as well.  
 
 * __add ability to edit or delete login records__
     * Currently there is no method of editing or deleting login records.  I would like to add this functionality.  There are multiple entries allowed for each login name, so this does not hurt the functionality of the app, but it would be cleaner to allow editing and deleting of records.
+
+* __improve filterlist widget__
+    * The filterlist widget is used to search for login records by name.  It works well enough for search, but it users cannot browse records.  It does not show multiple "pages" of records, and it does not allow the user to scroll through the list.  I would like to improve this widget to allow browsing of records without directly searching.
 
 
 ## Testing
@@ -334,13 +334,8 @@ When deleting an account the following errors are checked for:
 
 
 ### Limitations
-The app requires the database to be available.  
+The app requires the database to be available.  Currently the app is running on Heroku, and the The database is hosted on an AWS EC2 instance, which could cause a problem if either platform is unavailable, or if there is a problem with the network connection between the two platforms.
 
-## Known Issues
-_The terminal emulator used to host the app on Heroku does not support shift-tab to move focus backwards.  There are three widgets on the view logins form that accept focus, the name filter, the grid that holds the list itself, and the OK button at the bottom that returns the user to the home screen._
 
-_This causes a problem when the main list has focus. Focus cannot return to the name filter field above because the grid widget that holds the list of entries captures up and down keypresses.  The only way to move focus out of this widget is to tab out, or use the mouse.  Since shift-tab is not supported by the emulator you cannot return to a widget above the grid._
-
-_This can be fixed by overwriting the python curses code that handles keypresses, but this has not been done yet.  The user can still use the mouse to click on the name filter field to return focus to it._
 
 
