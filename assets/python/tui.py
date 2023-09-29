@@ -189,7 +189,7 @@ class filterList(textline):
                 self.screen.addstr(self.y + i - start, self.x, self.names[i], curses.A_REVERSE)
             else:
                 self.screen.addstr(self.y + i - start, self.x, self.names[i])
-        self.screen.move(self.y - 1 , self.x)
+        self.screen.move(height-1, 0)
 
     def clear(self):
         height, width = self.screen.getmaxyx()
