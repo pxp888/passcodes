@@ -77,6 +77,9 @@ class accountForm(form):
             self.alert("New Password must be at least 6 characters")
             return
         
+        if not self.confirm("Are you sure you want to change your password?"):
+            return 
+        
         npass = self.passline1.value
         records = getUserData(user, password)
 
@@ -97,6 +100,9 @@ class accountForm(form):
         self.parentApp.switchForm('Home')
 
     def removeUser(self, thing):
+        if not self.confirm("Are you sure you want to delete your account?"):
+            return
+
         """remove the user from the database"""
         # check that the current password is correct
         known = getUserLoginData(self.parentApp.currentUser)
