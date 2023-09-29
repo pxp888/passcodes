@@ -90,7 +90,16 @@ The master password is not stored in the database, so the login passwords cannot
 ~~~
 
 
+### Cryptographic Functions
 
+The application uses the standard python __cryptography__ module for symmetric cryptography.  The __Fernet__ class is used to encrypt and decrypt the login passwords.  The __SHA256__ algorithm is used to hash the master passwords.
+
+There are three cryptographic functions that are defined in __helpers.py__.  These functions are:
+* __hash()__ - generates hashes using the SHA256 algorithm
+* __encrypt()__ - encrypts plaintext using the Fernet class
+* __decrypt()__ - decrypts cyphertext using the Fernet class
+
+If the encryption scheme needs to be changed in the future, only these functions need to be changed.
 
 
 ## Interface Flowchart
@@ -169,9 +178,22 @@ The user can select a record by clicking on it, or by using the up and down arro
 
 ## Interface classes
 
+~~~mermaid 
+graph LR
+    stui[simpleTuiApp]
+    stui-->f1[form 1]
+    stui-->f2[form 2]
+    stui-->f3[form 3]
+    f1-->w1[Widget 1]
+    f1-->w2[Widget 2]
+    f2-->w3[Widgets ...]
+    f3-->w4[more widgets ...]
+~~~
+
+
 The interface is written in python using the curses library.  The curses library has limited support for user input on its own, so I created my own classes to handle the interface elements. 
 
-This makes it easy to create new forms, and to re-use the same widgets in different forms.  The interface classes are in the __tui.py__ file.  
+This makes it easy to create new forms, and to re-use the same widgets in different forms.  The interface classes are in the __tui.py__ file. 
 
 The __tui.py__ file contains the following classes:
 
@@ -194,22 +216,11 @@ This class is responsible for managing a group of widgets.  It handles drawing t
 This class is subclassed for each form in the app.  Each form has its own widgets, and its own logic.
 
 ### simpleTuiApp
-This class is responsible for managing the forms.  It also holds any variables that must be available to all forms.  This also creates the event loop and captures keyboard inputs.  
+This class is responsible for managing the forms.  It also holds any variables that must be available to all forms.  This class also captures keyboard inputs and passes them on to the current form, which then passes them on to the current widget.  This effectively creates the event loop of the application.  
 
 Forms are created and then added to the simpleTuiApp object.  Then the simpleTuiApp object is run, which starts the event loop.  The event loop captures keyboard inputs and passes them to the current form.  The form then handles the input and updates the screen as needed.
 
 
-~~~mermaid 
-graph LR
-    stui[simpleTuiApp]
-    stui-->f1[form 1]
-    stui-->f2[form 2]
-    stui-->f3[form 3]
-    f1-->w1[Widget 1]
-    f1-->w2[Widget 2]
-    f2-->w3[Widgets ...]
-    f3-->w4[more widgets ...]
-~~~
 
 
 ## Application Structure
@@ -223,7 +234,9 @@ There are five forms used in this application.  Each form is a subclass of the f
 
 
 ## Database Structure
-The database is PostgreSQL, which is a relational database.  The database has two tables, one for users, and one for login records.  Database requirements for this application are relatively simple, so the database structure is also simple.
+The database is PostgreSQL, which is a relational database.  The database has two tables, one for users, and one for login records.  Database requirements for this application are relatively simple, and the database structure is also simple.
+
+__Table Structure__
 
 |passcodes|users
 |-|-|
@@ -255,18 +268,18 @@ The connection to the database is stored in a global variable to enable re-using
 
 
 
-
 ## Technologies and Frameworks used
 * VSCode - IDE used for development
 * Python
     * cryptography - for encrypting and decrypting passwords
     * psycopg2 - for connecting to the database
 
-* Github - for version control
+* Git CLI & Github - for version control
 * Heroku - for deployment of the app itself
 * PostgreSQL - for database storage
 * Docker - containerization of PostgreSQL database
 * AWS EC2 - for hosting the database container
+
 
 ## Deployment and Local Development
 The app itself is deployed on Heroku, using a github template from Code Institute to provide the terminal emulator.
@@ -280,18 +293,15 @@ The database is accessed by the app using the psycopg2 library.  The database UR
 
 ## Pending Improvements
 * __move database to Heroku__
-    * I happened to have an AWS EC2 instance running, so I used that to host the database.  I would like to move the database to a Heroku hosted PostgreSQL database.  
+    * I happened to have an AWS EC2 instance running, so I used that to host the database.  It might make sense to move the database to Heroku as well.  
 
 * __add ability to edit or delete login records__
     * Currently there is no method of editing or deleting login records.  I would like to add this functionality.  There are multiple entries allowed for each login name, so this does not hurt the functionality of the app, but it would be cleaner to allow editing and deleting of records.
 
-* __add ability to edit or delete user accounts__
-    * There is no method of editing or deleting user accounts.  This is a functional issue in the case that a user wants to change their master password, or if they have lost their master password.
-
 
 ## Testing
 
-The app was tested manually.  There is intentionally minimal limitations placed on user inputs.  In general all data is recorded as strings, so there are no issues with data types.  
+The app was tested manually.  There is intentionally minimal limitations placed on user inputs.  In general all data is recorded as strings, so there are no issues with data types.  The only type conversion that is done is converting the password length setting from a string to an integer.  
 
 Most of the data that is user inputs is optional.  The only exceptions are the username and password when logging in, and the name of each record when creating a new login record.  
 
