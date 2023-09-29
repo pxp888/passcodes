@@ -29,6 +29,9 @@ class loginForm(form):
         self.add(self.loginButton)
         self.add(self.createButton)
 
+        self.add(textline("Hint - You can navigate with arrows keys or Tab"),y=10)
+
+
     def login(self, thing=None):
         user = self.username.value
         password = self.password.value

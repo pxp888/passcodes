@@ -25,6 +25,10 @@ class homeForm(form):
         self.add(self.accountButton)
         self.add(self.logoutButton)
 
+        self.add(textline("View Logins - view all of your saved login entries"), y=10)
+        self.add(textline("Create Login - create a new login entry"), y=11)
+        self.add(textline("Account Details - manage user account"), y=12)
+
     def logout(self, thing=None):
         self.parentApp.currentUser = None
         self.parentApp.masterPassword = None
