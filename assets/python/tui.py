@@ -76,7 +76,7 @@ class lineEdit(textline):
         elif key == 'KEY_UP':
             if self.parent is not None:
                 self.parent.focusPrev()
-        elif key == 'KEY_LEFT' or key == 'KEY_RIGHT':
+        elif key == 'KEY_LEFT' or key == 'KEY_RIGHT' or key == 'KEY_NPAGE' or key == 'KEY_PPAGE':
             pass
         else:
             self.value += key
@@ -169,7 +169,7 @@ class filterList(textline):
             for i in self.items:
                 if self.fterm.lower() in i.lower():
                     self.names.append(i)
-        
+
         if not self.names:
             self.screen.addstr(self.y, self.x, 'No entries found.')
             return
@@ -229,7 +229,7 @@ class filterList(textline):
                 self.selected = 0
             else:
                 self.selected = (self.selected + self.maxlen)
-                if self.selected >= len(self.names): 
+                if self.selected >= len(self.names):
                     self.selected = len(self.names) - 1
             self.draw()
         elif key == 'KEY_PPAGE':

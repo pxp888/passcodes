@@ -14,13 +14,13 @@ class viewLoginForm(form):
 
         self.okButton.callback = self.on_ok
         self.nameFilterLine.pressCallback = self.grid.filter
-        
+
         height, width = self.screen.getmaxyx()
         self.grid.maxlen = height - 10
         self.grid.callback = self.itemPicked
 
         self.add(textline('View Logins'))
-        
+
         self.add(textline('\u2500'*(width-4)))
         self.add(textline('Use the name filter field to search for a specific login.'))
         self.add(textline('Then select a login to view details.'))
@@ -28,7 +28,7 @@ class viewLoginForm(form):
         self.add(self.nameFilterLine)
         self.add(textline('-'*40))
         self.add(self.grid)
-        
+
         self.records = []
 
     def on_ok(self, thing=None):
