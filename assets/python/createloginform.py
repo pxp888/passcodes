@@ -1,5 +1,6 @@
 import time
 import random
+import re 
 
 from helpers import *
 from tui import *
@@ -79,16 +80,22 @@ class createLoginForm(form):
         random.seed(time.time())
         letterpool = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         numberpool = "0123456789"
-        symbolpool = "!@#$%^&*()_+-=[]{};:,./<>?"
+        symbolpool = "!@#$%^&*()_+-=[];:,./<>?"
         pool = letterpool
-
         if self.numbers.value:
             pool += numberpool
         if self.symbols.value:
             pool += symbolpool
-        code = ''
-        while len(code) < int(self.passLength.value):
-            code += random.choice(pool)
+        while 1:
+            code = ''
+            while len(code) < int(self.passLength.value):
+                code += random.choice(pool)
+            if self.numbers.value and not re.search(r'[{}]'.format(numberpool), code):
+                continue
+            if self.symbols.value and not re.search(r'[{}]'.format(re.escape(symbolpool)), code):
+                continue
+            break
+        
         self.password.value = code
         self.password.draw()
 
