@@ -1,6 +1,7 @@
 import time
 import random
 import re
+import urllib.parse
 
 from helpers import *
 from tui import *
@@ -98,6 +99,15 @@ class createLoginForm(form):
         self.password.value = code
         self.password.draw()
 
+    def check_url(self, url):
+        if 'http' not in url[:4]:
+            url = 'http://' + url
+        try:
+            result = urllib.parse.urlparse(url)
+            return all([result.scheme, result.netloc])
+        except ValueError:
+            return False
+
     def on_ok(self, thing=None):
         # save the login to the database
         if self.name.value == "":
@@ -118,6 +128,14 @@ class createLoginForm(form):
         if self.symbols.value and not re.search(r'[{}]'.format(re.escape(symbolpool)), self.password.value):
             if not self.confirm("Password does not contain a symbol, are you sure?"):
                 return
+
+        if self.url.value == "":
+            if not self.confirm("URL is empty, are you sure?"):
+                return
+        else:
+            if not self.check_url(self.url.value):
+                if not self.confirm("URL is not valid, are you sure?"):
+                    return
 
         currentuser = self.parentApp.currentUser
         masterPassword = self.parentApp.masterPassword

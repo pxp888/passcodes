@@ -355,6 +355,8 @@ When creating a new login record the following errors are checked for:
 * __password length__ - password must be within length limits
 * __password length field__ - must be a number
 * __password follows inclusion rules__ - if the user edits a password but it does not follow the inclusion rules, the user is asked to confirm that they accept the password as is.  
+* __blank URL__ - The user is asked to confirm if they want to save a blank URL
+* __invalid URL__ - The user is asked to confirm if they want to save an invalid URL
 
 When changing the master password the following errors are checked for:
 * __current password__ must be correct
@@ -364,6 +366,14 @@ When changing the master password the following errors are checked for:
 When deleting an account the following errors are checked for:
 * __current password__ must be correct
 * __confirm password__ must match current password
+
+## Validation
+All python files were checked using the [Code Institute Python Linter](https://pep8ci.herokuapp.com/). 
+
+All files passed the linter with no errors or warnings, except for __"E501 line too long"__ warnings.  
+
+These warnings were addressed where possible, but some code lines are difficult to split. In these cases the lines were left as is.
+
 
 
 ### Limitations
