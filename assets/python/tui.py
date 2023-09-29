@@ -215,6 +215,8 @@ class filterList(textline):
             if self.selected == 0:
                 self.selected = -1
                 self.parent.focusPrev()
+            elif self.selected == -1:
+                self.parent.focusPrev()
             else:
                 if self.names:
                     self.selected = (self.selected - 1) % len(self.names)
