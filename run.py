@@ -28,6 +28,9 @@ def main(stdscr):
     accountform = accountForm(stdscr)
 
     app = simpleTuiApp(stdscr)
+    app.masterPassword = None
+    app.currentUser = None
+
     app.addform("MAIN", logform)
     app.addform("Home", homeform)
     app.addform("CreateLogin", createform)

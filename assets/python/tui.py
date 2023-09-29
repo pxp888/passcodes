@@ -352,8 +352,8 @@ class simpleTuiApp():
         self.forms = {}
         self.currentForm = None
 
-        self.masterPassword = None
-        self.currentUser = None
+        # self.masterPassword = None
+        # self.currentUser = None
 
         curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)
         curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)

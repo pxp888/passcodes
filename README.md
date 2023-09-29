@@ -234,14 +234,26 @@ Forms are created and then added to the simpleTuiApp object.  Then the simpleTui
 
 
 ## Application Structure
-There are five forms used in this application.  Each form is a subclass of the __form__ class defined in the __tui.py__ file.  Each form has its own widgets, and its own logic.
+There are five forms used in this application.  Each form is a subclass of the __form__ class defined in the __tui.py__ file.  Each form has its own widgets, and 
+its own logic.
 
+### simpleTuiApp : 
+
+* The forms that make up the app
+* __currentUser__ The current username
+* __The master password__ of the current user
+
+### Forms : 
 * __loginForm__ - Handles logging in users and creating new accounts.
 * __homeForm__ - The home menu.  Provides buttons to navigate to the other forms, or logout.  
 * __createLoginForm__ - Handles creating new login records.
 * __viewLoginForm__ - Handles viewing login records.
 * __accountForm__ - Handles changing the master password and deleting user accounts.
 
+### Other Variables
+* __db_connection__ - The connection to the database.  This is a global variable to avoid creating a new connection for each database call.
+* __DB_IP__ - environment variable for the database IP address
+* __DB_PW__ - environment variable for the database password
 
 ## Database Structure
 The database is PostgreSQL, which is a relational database.  The database has two tables, one for users, and one for login records.  Database requirements for this application are relatively simple, and the database structure is also simple.
@@ -332,6 +344,7 @@ When creating a new login record the following errors are checked for:
 * __blank name__ - name field must not be empty
 * __password length__ - password must be within length limits
 * __password length field__ - must be a number
+* __password follows inclusion rules__ - if the user edits a password but it does not follow the inclusion rules, the user is asked to confirm that they accept the password as is.  
 
 When changing the master password the following errors are checked for:
 * __current password__ must be correct
