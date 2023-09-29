@@ -16,6 +16,7 @@ class loginForm(form):
         self.loginButton.callback = self.login
         self.createButton.callback = self.createAccount
 
+        self.add(textline("\n"))
         self.add(textline("Welcome to Passcodes"))
         height, width = self.screen.getmaxyx()
         self.add(textline('\u2500'*(width-4)))
